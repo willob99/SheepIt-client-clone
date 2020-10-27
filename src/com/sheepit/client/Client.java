@@ -32,6 +32,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -637,10 +638,12 @@ import lombok.Data;
 			// Insert the info at the beginning of the error log
 			writer.write(logHeader.toString().getBytes());
 			
-			ArrayList<String> logs = this.log.getForCheckPoint(step_);
-			for (String line : logs) {
-				writer.write(line.getBytes());
-				writer.write('\n');
+			Optional<ArrayList<String>> logs = this.log.getForCheckPoint(step_);
+			if (logs.isPresent()) {
+				for (String line : logs.get()) {
+					writer.write(line.getBytes());
+					writer.write('\n');
+				}
 			}
 			
 			writer.close();

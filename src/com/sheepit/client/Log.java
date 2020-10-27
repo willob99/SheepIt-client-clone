@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class Log {
 	private static Log instance = null;
@@ -94,8 +95,8 @@ public class Log {
 		return this.lastCheckPoint;
 	}
 	
-	public ArrayList<String> getForCheckPoint(int point_) {
-		return this.checkpoints.get(point_);
+	public Optional<ArrayList<String>> getForCheckPoint(int point_) {
+		return Optional.ofNullable(this.checkpoints.get(point_));
 	}
 	
 	public void removeCheckPoint(int point_) {
@@ -119,9 +120,11 @@ public class Log {
 	
 	public static synchronized void printCheckPoint(int point_) {
 		Log log = Log.getInstance(null);
-		ArrayList<String> logs = log.getForCheckPoint(point_);
-		for (String alog : logs) {
-			System.out.println(alog);
+		Optional<ArrayList<String>> logs = log.getForCheckPoint(point_);
+		if (logs.isPresent()) {
+			for (String alog : logs.get()) {
+				System.out.println(alog);
+			}
 		}
 	}
 }
