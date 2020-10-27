@@ -1030,6 +1030,9 @@ import lombok.Data;
 					break retryLoop;
 				
 				case JOB_VALIDATION_ERROR_IMAGE_WRONG_DIMENSION:
+					confirmJobReturnCode = Error.Type.IMAGE_WRONG_DIMENSION;
+					break retryLoop;
+					
 				case JOB_VALIDATION_ERROR_MISSING_PARAMETER:
 					// no point to retry the request
 					confirmJobReturnCode = Error.Type.UNKNOWN;

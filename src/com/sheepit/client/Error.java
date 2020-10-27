@@ -50,6 +50,7 @@ public class Error {
 		CPU_NOT_SUPPORTED(18),
 		GPU_NOT_SUPPORTED(19),
 		VALIDATION_FAILED(25),
+		IMAGE_WRONG_DIMENSION(26),
 		
 		// internal error handling
 		NO_SPACE_LEFT_ON_DEVICE(100), ERROR_BAD_RESPONSE(101),
@@ -192,6 +193,8 @@ public class Error {
 				return "CPU not supported.";
 			case NO_SPACE_LEFT_ON_DEVICE:
 				return "No space left on hard disk";
+			case IMAGE_WRONG_DIMENSION:
+				return "Validation failed, switching to another project";
 			default:
 				return in.toString();
 		}
