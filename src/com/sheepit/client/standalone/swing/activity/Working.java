@@ -404,9 +404,9 @@ public class Working implements Activity {
 						}
 						icon = new ImageIcon(img.getScaledInstance((int) (width * factor), (int) (height * factor), Image.SCALE_FAST));
 					}
-					catch (IOException e) {
+					catch (Exception e) {
 						log.error(String.format("Working::showLastRender() Unable to load/preview rendered frame [%s]. Exception %s",
-								lastJob.getOutputImagePath(), e.getMessage()));
+							lastJob.getOutputImagePath(), e.getMessage()));
 					}
 				}
 				
