@@ -620,14 +620,14 @@ import lombok.Data;
 				.append(String.format("%s  x%d  %.1f GB RAM\n", cpu.name(), conf.getNbCores(), conf.getMaxMemory() / 1024.0 / 1024.0));
 			
 			if (conf.getComputeMethod() == Configuration.ComputeType.GPU || conf.getComputeMethod() == Configuration.ComputeType.CPU_GPU) {
-				logHeader
-					.append(String.format("%s   %.1f GB VRAM\n", conf.getGPUDevice().getModel(), conf.getGPUDevice().getMemory() / 1024.0 / 1024.0 / 1024.0));
+				logHeader.append(String.format("%s   %s   %.1f GB VRAM\n", conf.getGPUDevice().getId(), conf.getGPUDevice().getModel(),
+					conf.getGPUDevice().getMemory() / 1024.0 / 1024.0 / 1024.0));
 			}
 			
 			logHeader.append("====================================================================================================\n");
 			if (job_to_reset_ != null) {
-				logHeader.append(String.format("Project ::: %s\n", job_to_reset_.getName())).append(String.format("Project id: %s  frame: %s\n", job_to_reset_.getId(), job_to_reset_.getFrameNumber()))
-						.append(String.format("blender ::: %s\n\n", job_to_reset_.getBlenderLongVersion())).append(String.format("ERROR Type :: %s\n", error));
+				logHeader.append(String.format("Project ::: %s\n", job_to_reset_.getName()))
+					.append(String.format("Project id: %s  frame: %s\n", job_to_reset_.getId(), job_to_reset_.getFrameNumber())).append(String.format("blender ::: %s\n\n", job_to_reset_.getBlenderLongVersion())).append(String.format("ERROR Type :: %s\n", error));
 			}
 			else {
 				logHeader.append("Project ::: No project allocated.\n")
