@@ -89,7 +89,7 @@ Answer in case of error:
 <jobrequest status="X" />
 where X:
     * 0   => No error
-    * 200 => No job available, the client should wait few minutes before requesting a new job (typical value is 1hour).
+    * 200 => No job available, the client should wait few minutes before requesting a new job (typical value is 1 minute).
     * 201 => The client does not have rendering right.
     * 202 => Client's session is dead. Client should send another config request before requesting a new job.
     * 203 => Client's session has been disabled (usually because the client is sending broken frames). The client should alert the end user and logout.
@@ -123,7 +123,7 @@ if fileformat != 'BMP' and fileformat != 'PNG' and fileformat != 'JPEG' and file
 
 === Job validation ===
 
-Url: use the url url of job's node for 'validationurl'.
+Url: use the url of job's node for 'validationurl'.
 Parameter as GET or POST:
     * job: Job ID
     * frame: Job's frame number
