@@ -142,10 +142,25 @@ public class Worker {
 		}
 		
 		if (cache_dir != null) {
-			File a_dir = new File(cache_dir);
-			a_dir.mkdirs();
-			if (a_dir.isDirectory() && a_dir.canWrite()) {
-				config.setCacheDir(a_dir);
+			Pattern cache_dirValidator = Pattern.compile("^(\\/|\\\\|[a-z]:)[a-z0-9\\/\\\\-_.]+$",Pattern.CASE_INSENSITIVE);
+			Matcher cache_dirCandidate = cache_dirValidator.matcher(cache_dir);
+			
+			if (cache_dirCandidate.find()) {
+
+				File a_dir = new File(cache_dir);
+				a_dir.mkdirs();
+				if (a_dir.isDirectory() && a_dir.canWrite()) {
+					config.setCacheDir(a_dir);
+				}
+				else {
+					System.err.println("ERROR: The entered cache path is either not a directory or is not writable!");
+					System.exit(2);
+				}
+
+			}
+			else {
+				System.err.println("ERROR: The entered cache path (-cache-dir parameter) contains invalid characters. Allowed characters are a-z, A-Z, 0-9, /, \\, ., - and _");
+				System.exit(2);
 			}
 		}
 		
