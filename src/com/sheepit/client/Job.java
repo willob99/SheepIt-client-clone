@@ -856,6 +856,12 @@ import lombok.Getter;
 			// Saved: '/tmp/cache/8_0001.png'
 			return Error.Type.GPU_NOT_SUPPORTED;
 		}
+		else if (line.contains("Engine 'CYCLES' not available for scene") || line.contains("Engine 'BLENDER_EEVEE' not available for scene")) {
+			return Error.Type.ENGINE_NOT_AVAILABLE;
+		}
+		else if (line.contains("Warning: Cycles is not enabled!")) {
+			return Error.Type.ENGINE_NOT_AVAILABLE;
+		}
 		return Type.OK;
 	}
 	

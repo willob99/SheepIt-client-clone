@@ -49,6 +49,7 @@ public class Error {
 		OS_NOT_SUPPORTED(17),
 		CPU_NOT_SUPPORTED(18),
 		GPU_NOT_SUPPORTED(19),
+		ENGINE_NOT_AVAILABLE(27),
 		VALIDATION_FAILED(25),
 		IMAGE_WRONG_DIMENSION(26),
 		
@@ -191,6 +192,8 @@ public class Error {
 				return "Operating System not supported.";
 			case CPU_NOT_SUPPORTED:
 				return "CPU not supported.";
+			case ENGINE_NOT_AVAILABLE:
+				return "Engine not available.";
 			case NO_SPACE_LEFT_ON_DEVICE:
 				return "No space left on hard disk";
 			case IMAGE_WRONG_DIMENSION:
