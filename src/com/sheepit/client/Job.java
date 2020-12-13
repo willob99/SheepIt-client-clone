@@ -220,6 +220,8 @@ import lombok.Getter;
 		Map<String, String> new_env = new HashMap<String, String>();
 		
 		new_env.put("BLENDER_USER_CONFIG", configuration.getWorkingDirectory().getAbsolutePath().replace("\\", "\\\\"));
+		new_env.put("TEMP", configuration.getWorkingDirectory().getAbsolutePath().replace("\\", "\\\\"));
+		new_env.put("TMP", configuration.getWorkingDirectory().getAbsolutePath().replace("\\", "\\\\"));
 		new_env.put("CORES", Integer.toString(configuration.getNbCores()));
 		new_env.put("PRIORITY", Integer.toString(configuration.getPriority()));
 		new_env.put("PYTHONPATH", ""); // make sure blender is using the embedded python, if not it could create "Fatal Python error: Py_Initialize"

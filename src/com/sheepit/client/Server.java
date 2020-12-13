@@ -325,33 +325,14 @@ public class Server extends Thread {
 					}
 				}
 				
-				String script = "import bpy\n";
-				// blender 2.7x
-				script += "try:\n";
-				script += "\tbpy.context.user_preferences.filepaths.temporary_directory = \"" + this.user_config.getWorkingDirectory().getAbsolutePath()
-						.replace("\\", "\\\\") + "\"\n";
-				script += "except AttributeError:\n";
-				script += "\tpass\n";
-				
-				// blender 2.80
-				script += "try:\n";
-				script += "\tbpy.context.preferences.filepaths.temporary_directory = \"" + this.user_config.getWorkingDirectory().getAbsolutePath()
-						.replace("\\", "\\\\") + "\"\n";
-				script += "except AttributeError:\n";
-				script += "\tpass\n";
-				
-				script += jobData.getRenderTask().getScript();
-				
 				String validationUrl = URLDecoder.decode(jobData.getRenderTask().getValidationUrl(), "UTF-8");
 				
-				Job a_job = new Job(this.user_config, this.client.getGui(), this.client.getLog(), jobData.getRenderTask().getId(),
+				return new Job(this.user_config, this.client.getGui(), this.client.getLog(), jobData.getRenderTask().getId(),
 						jobData.getRenderTask().getFrame(), jobData.getRenderTask().getPath().replace("/", File.separator),
-						jobData.getRenderTask().getUseGpu() == 1, jobData.getRenderTask().getRendererInfos().getCommandline(), validationUrl, script,
-						jobData.getRenderTask().getArchive_md5(), jobData.getRenderTask().getRendererInfos().getMd5(), jobData.getRenderTask().getName(),
-						jobData.getRenderTask().getPassword(), jobData.getRenderTask().getExtras(), jobData.getRenderTask().getSynchronous_upload().equals("1"),
-						jobData.getRenderTask().getRendererInfos().getUpdate_method());
-				
-				return a_job;
+						jobData.getRenderTask().getUseGpu() == 1, jobData.getRenderTask().getRendererInfos().getCommandline(), validationUrl,
+						jobData.getRenderTask().getScript(), jobData.getRenderTask().getArchive_md5(), jobData.getRenderTask().getRendererInfos().getMd5(),
+						jobData.getRenderTask().getName(), jobData.getRenderTask().getPassword(), jobData.getRenderTask().getExtras(),
+						jobData.getRenderTask().getSynchronous_upload().equals("1"), jobData.getRenderTask().getRendererInfos().getUpdate_method());
 			}
 			else {
 				System.out.println("Server::requestJob url " + url_contents + " r " + r + " contentType " + contentType);
