@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 import com.sheepit.client.Client;
 import com.sheepit.client.Configuration;
 import com.sheepit.client.Configuration.ComputeType;
+import com.sheepit.client.Error;
 import com.sheepit.client.Gui;
 import com.sheepit.client.Log;
 import com.sheepit.client.Pair;
@@ -51,6 +52,7 @@ import com.sheepit.client.hardware.gpu.GPUDevice;
 import com.sheepit.client.hardware.gpu.nvidia.Nvidia;
 import com.sheepit.client.hardware.gpu.opencl.OpenCL;
 import com.sheepit.client.network.Proxy;
+import com.sheepit.client.os.OS;
 
 public class Worker {
 	@Option(name = "-server", usage = "Render-farm server, default https://client.sheepit-renderfarm.com", metaVar = "URL", required = false) private String server = "https://client.sheepit-renderfarm.com";
@@ -109,6 +111,10 @@ public class Worker {
 	@Option(name = "-hostname", usage = "Set a custom hostname name (name change will be lost when client is closed)", required = false) private String hostname = null;
 	
 	public static void main(String[] args) {
+		if (OS.getOS() == null) {
+			System.err.println(Error.humanString(Error.Type.OS_NOT_SUPPORTED));
+			System.exit(1);
+		}
 		new Worker().doMain(args);
 	}
 	
