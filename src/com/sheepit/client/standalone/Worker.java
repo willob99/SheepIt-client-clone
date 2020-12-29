@@ -142,7 +142,7 @@ public class Worker {
 		}
 		
 		if (cache_dir != null) {
-			Pattern cache_dirValidator = Pattern.compile("^(\\/|\\\\|[a-z]:)[a-z0-9\\/\\\\-_.]+$",Pattern.CASE_INSENSITIVE);
+			Pattern cache_dirValidator = Pattern.compile("^(\\/|\\\\|[a-z]:)?[a-z0-9\\/\\\\\\s-_.]+$",Pattern.CASE_INSENSITIVE);
 			Matcher cache_dirCandidate = cache_dirValidator.matcher(cache_dir);
 			
 			if (cache_dirCandidate.find()) {
