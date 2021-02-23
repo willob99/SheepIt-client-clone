@@ -35,6 +35,9 @@ import java.util.Set;
 import com.sheepit.client.Configuration.ComputeType;
 import com.sheepit.client.hardware.gpu.GPU;
 import com.sheepit.client.hardware.gpu.GPUDevice;
+import com.sheepit.client.standalone.GuiSwing;
+import com.sheepit.client.standalone.GuiText;
+import com.sheepit.client.standalone.GuiTextOneLine;
 import lombok.Setter;
 
 public class SettingsLoader {
@@ -398,6 +401,10 @@ public class SettingsLoader {
 				
 				// And now update the client configuration with the new value
 				config.setRenderbucketSize(config.getGPUDevice().getRenderbucketSize());
+			}
+			else if (config.getUIType() != null && (config.getUIType().equals(GuiText.type) || config.getUIType().equals(GuiTextOneLine.type))) {
+				System.err.println("SettingsLoader::merge could not find specified GPU");
+				System.exit(2);
 			}
 		}
 		else if (config.getGPUDevice() != null) {

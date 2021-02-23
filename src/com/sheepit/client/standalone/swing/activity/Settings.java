@@ -71,6 +71,8 @@ import com.sheepit.client.hardware.gpu.opencl.OpenCL;
 import com.sheepit.client.network.Proxy;
 import com.sheepit.client.os.OS;
 import com.sheepit.client.standalone.GuiSwing;
+import com.sheepit.client.standalone.GuiText;
+import com.sheepit.client.standalone.GuiTextOneLine;
 import com.sheepit.client.standalone.swing.components.CollapsibleJPanel;
 
 public class Settings implements Activity {
@@ -316,7 +318,9 @@ public class Settings implements Activity {
 			int maxRenderbucketSize = 128;
 			int recommendedBucketSize = GPU.MIN_RENDERBUCKET_SIZE;
 			
-			if (config.getComputeMethod() == ComputeType.GPU || config.getComputeMethod() == ComputeType.CPU_GPU) {
+			//When replacing gpus it can happen that the client can't find the one specified in the config anymore in which case config.getGPUDevice()
+			//returns null
+			if ((config.getComputeMethod() == ComputeType.GPU || config.getComputeMethod() == ComputeType.CPU_GPU) && config.getGPUDevice() != null) {
 				GPULister gpu;
 				
 				if (config.getGPUDevice().getType().equals("CUDA")) {
