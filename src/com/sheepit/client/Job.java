@@ -219,18 +219,20 @@ import java.util.regex.Pattern;
 		
 		Map<String, String> new_env = new HashMap<>();
 		
-		new_env.put("BLENDER_USER_CONFIG", configuration.getWorkingDirectory().getAbsolutePath().replace("\\", "\\\\"));
+		
 		new_env.put("TEMP", configuration.getWorkingDirectory().getAbsolutePath().replace("\\", "\\\\"));
 		new_env.put("TMP", configuration.getWorkingDirectory().getAbsolutePath().replace("\\", "\\\\"));
 		new_env.put("CORES", Integer.toString(configuration.getNbCores()));
 		new_env.put("PRIORITY", Integer.toString(configuration.getPriority()));
+		//make sure the system doesn´t interfere with the blender runtime, and that blender doesn´t attempt to load external libraries/scripts.
+		new_env.put("BLENDER_USER_CONFIG", "");
+		new_env.put("BLENDER_USER_SCRIPTS", "");
+		new_env.put("BLENDER_SYSTEM_SCRIPTS", "");
+		new_env.put("BLENDER_USER_DATAFILES", "");
+		new_env.put("BLENDER_SYSTEM_DATAFILES", "");
+		new_env.put("BLENDER_SYSTEM_PYTHON", "");
 		new_env.put("PYTHONPATH", ""); // make sure blender is using the embedded python, if not it could create "Fatal Python error: Py_Initialize"
 		new_env.put("PYTHONHOME", "");// make sure blender is using the embedded python, if not it could create "Fatal Python error: Py_Initialize"
-		
-		if (isUseGPU() && configuration.getGPUDevice() != null && configuration.getComputeMethod() != ComputeType.CPU && OpenCL.TYPE
-				.equals(configuration.getGPUDevice().getType())) {
-			new_env.put("CYCLES_OPENCL_SPLIT_KERNEL_TEST", "1");
-		}
 		
 		for (String arg : command1) {
 			switch (arg) {
