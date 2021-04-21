@@ -73,6 +73,7 @@ import com.sheepit.client.os.OS;
 import com.sheepit.client.standalone.GuiSwing;
 import com.sheepit.client.standalone.GuiText;
 import com.sheepit.client.standalone.GuiTextOneLine;
+import com.sheepit.client.standalone.SwingTooltips;
 import com.sheepit.client.standalone.swing.components.CollapsibleJPanel;
 
 public class Settings implements Activity {
@@ -220,6 +221,7 @@ public class Settings implements Activity {
 		CollapsibleJPanel directory_panel = new CollapsibleJPanel(new GridLayout(1, 3), this);
 		directory_panel.setBorder(BorderFactory.createTitledBorder("Cache"));
 		JLabel cacheLabel = new JLabel("Working directory:");
+		cacheLabel.setToolTipText(SwingTooltips.WORKING_DIRECTORY.getText());
 		directory_panel.add(cacheLabel);
 		String destination = DUMMY_CACHE_DIR;
 		if (config.isUserHasSpecifiedACacheDir()) {
@@ -254,6 +256,7 @@ public class Settings implements Activity {
 		CollapsibleJPanel compute_devices_panel = new CollapsibleJPanel(gridbag, this);
 		
 		compute_devices_panel.setBorder(BorderFactory.createTitledBorder("Compute devices"));
+		compute_devices_panel.setToolTipText(SwingTooltips.COMPUTE_DEVICES.getText());
 		
 		ComputeType method = config.getComputeMethod();
 		useCPU = new JCheckBox("CPU");
@@ -289,6 +292,7 @@ public class Settings implements Activity {
 			renderbucketSize.setMinorTickSpacing(1);
 			renderbucketSize.setPaintTicks(true);
 			renderbucketSize.setPaintLabels(true);
+			renderbucketSizeLabel.setToolTipText(SwingTooltips.RENDERBUCKET_SIZE.getText());
 			
 			renderbucketSizeLabel.setVisible(false);
 			renderbucketSize.setVisible(false);
@@ -370,6 +374,7 @@ public class Settings implements Activity {
 			cpuCores.setPaintLabels(true);
 			cpuCores.setValue(config.getNbCores() != -1 ? config.getNbCores() : cpuCores.getMaximum());
 			JLabel coreLabel = new JLabel("CPU cores:");
+			coreLabel.setToolTipText(SwingTooltips.CPU_CORES.getText());
 			
 			compute_devices_constraints.weightx = 1.0 / gpus.size();
 			compute_devices_constraints.gridx = 0;
@@ -406,6 +411,7 @@ public class Settings implements Activity {
 		ram.setPaintLabels(true);
 		ram.setValue((int) (config.getMaxMemory() != -1 ? config.getMaxMemory() : os.getMemory()));
 		JLabel ramLabel = new JLabel("Memory:");
+		ramLabel.setToolTipText(SwingTooltips.MEMORY.getText());
 		
 		compute_devices_constraints.weightx = 1.0 / gpus.size();
 		compute_devices_constraints.gridx = 0;
@@ -432,6 +438,7 @@ public class Settings implements Activity {
 		priority.setPaintLabels(true);
 		priority.setValue(config.getPriority());
 		JLabel priorityLabel = new JLabel(high_priority_support ? "Priority (High <-> Low):" : "Priority (Normal <-> Low):");
+		priorityLabel.setToolTipText(SwingTooltips.PRIORITY.getText());
 		
 		boolean showPrioritySlider = os.checkNiceAvailability();
 		priority.setVisible(showPrioritySlider);
@@ -461,6 +468,7 @@ public class Settings implements Activity {
 		advanced_panel.setBorder(BorderFactory.createTitledBorder("Advanced options"));
 		
 		JLabel useSysTrayLabel = new JLabel("Minimize to SysTray");
+		useSysTrayLabel.setToolTipText(SwingTooltips.MINIMIZE_TO_SYSTRAY.getText());
 		
 		useSysTray = new JCheckBox();
 		useSysTray.setSelected(config.isUseSysTray());
@@ -468,7 +476,7 @@ public class Settings implements Activity {
 		advanced_panel.add(useSysTray);
 		
 		JLabel proxyLabel = new JLabel("Proxy:");
-		proxyLabel.setToolTipText("http://login:password@host:port");
+		proxyLabel.setToolTipText("http://login:password@host:port\n" + SwingTooltips.PROXY.getText());
 		proxy = new JTextField();
 		proxy.setToolTipText("http://login:password@host:port");
 		proxy.setText(parent.getConfiguration().getProxy());
@@ -478,6 +486,7 @@ public class Settings implements Activity {
 		advanced_panel.add(proxy);
 		
 		JLabel hostnameLabel = new JLabel("Computer name:");
+		hostnameLabel.setToolTipText(SwingTooltips.COMPUTER_NAME.getText());
 		hostname = new JTextField();
 		hostname.setText(parent.getConfiguration().getHostname());
 		
@@ -485,6 +494,7 @@ public class Settings implements Activity {
 		advanced_panel.add(hostname);
 		
 		JLabel renderTimeLabel = new JLabel("Max time per frame (in minute):");
+		renderTimeLabel.setToolTipText(SwingTooltips.MAX_TIME_PER_FRAME.getText());
 		int val = 0;
 		if (parent.getConfiguration().getMaxRenderTime() > 0) {
 			val = parent.getConfiguration().getMaxRenderTime() / 60;
