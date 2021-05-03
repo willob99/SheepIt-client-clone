@@ -71,9 +71,7 @@ import com.sheepit.client.hardware.gpu.opencl.OpenCL;
 import com.sheepit.client.network.Proxy;
 import com.sheepit.client.os.OS;
 import com.sheepit.client.standalone.GuiSwing;
-import com.sheepit.client.standalone.GuiText;
-import com.sheepit.client.standalone.GuiTextOneLine;
-import com.sheepit.client.standalone.SwingTooltips;
+import com.sheepit.client.standalone.swing.SwingTooltips;
 import com.sheepit.client.standalone.swing.components.CollapsibleJPanel;
 
 public class Settings implements Activity {
