@@ -26,7 +26,7 @@ import org.simpleframework.xml.Root;
 	
 	@Attribute(name = "name") @Getter private String name;
 	
-	@Attribute(name = "password") @Getter private String password;
+	@Attribute(name = "password") @Getter private char[] password;
 	
 	@Element(name = "renderer") @Getter private RendererInfos rendererInfos;
 	

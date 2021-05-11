@@ -19,6 +19,14 @@
 
 package com.sheepit.client;
 
+import com.sheepit.client.Configuration.ComputeType;
+import com.sheepit.client.Error.Type;
+import com.sheepit.client.hardware.cpu.CPU;
+import com.sheepit.client.hardware.gpu.opencl.OpenCL;
+import com.sheepit.client.os.OS;
+import lombok.Data;
+import lombok.Getter;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -40,16 +48,8 @@ import java.util.Observer;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-
-import com.sheepit.client.Configuration.ComputeType;
-import com.sheepit.client.Error.Type;
-import com.sheepit.client.hardware.cpu.CPU;
-import com.sheepit.client.hardware.gpu.opencl.OpenCL;
-import com.sheepit.client.os.OS;
-import lombok.Data;
-import lombok.Getter;
+import java.util.regex.Pattern;
 
 @Data public class Job {
 	public static final String UPDATE_METHOD_BY_REMAINING_TIME = "remainingtime";
@@ -70,7 +70,7 @@ import lombok.Getter;
 	private String script;
 	private boolean useGPU;
 	private String name;
-	private String password;
+	private char[] password;
 	private String extras;
 	private String updateRenderingStatusMethod;
 	private String blenderShortVersion;
@@ -85,7 +85,7 @@ import lombok.Getter;
 	private Log log;
 	
 	public Job(Configuration config_, Gui gui_, Log log_, String id_, String frame_, String path_, boolean use_gpu, String command_, String validationUrl_,
-			String script_, String sceneMd5_, String rendererMd5_, String name_, String password_, String extras_, boolean synchronous_upload_,
+			String script_, String sceneMd5_, String rendererMd5_, String name_, char[] password_, String extras_, boolean synchronous_upload_,
 			String update_method_) {
 		configuration = config_;
 		id = id_;
@@ -208,16 +208,16 @@ import lombok.Getter;
 		
 		core_script += ignore_signal_script;
 		File script_file = null;
-		String command1[] = getRendererCommand().split(" ");
+		String[] command1 = getRendererCommand().split(" ");
 		int size_command = command1.length + 2; // + 2 for script
 		
 		if (configuration.getNbCores() > 0) { // user has specified something
 			size_command += 2;
 		}
 		
-		List<String> command = new ArrayList<String>(size_command);
+		List<String> command = new ArrayList<>(size_command);
 		
-		Map<String, String> new_env = new HashMap<String, String>();
+		Map<String, String> new_env = new HashMap<>();
 		
 		new_env.put("BLENDER_USER_CONFIG", configuration.getWorkingDirectory().getAbsolutePath().replace("\\", "\\\\"));
 		new_env.put("TEMP", configuration.getWorkingDirectory().getAbsolutePath().replace("\\", "\\\\"));
@@ -366,7 +366,7 @@ import lombok.Getter;
 						return error;
 					}
 					
-					if (event.isStarted() == false && (process.getMemoryUsed() > 0 || process.getRemainingDuration() > 0)) {
+					if (!event.isStarted() && (process.getMemoryUsed() > 0 || process.getRemainingDuration() > 0)) {
 						event.doNotifyIsStarted();
 					}
 				}
@@ -581,7 +581,7 @@ import lombok.Getter;
 		String[] elements = line.toLowerCase().split("(peak)");
 		
 		for (String element : elements) {
-			if (element.isEmpty() == false && element.charAt(0) == ' ') {
+			if (!element.isEmpty() && element.charAt(0) == ' ') {
 				int end = element.indexOf(')');
 				if (end > 0) {
 					try {
@@ -596,7 +596,7 @@ import lombok.Getter;
 				}
 			}
 			else {
-				if (element.isEmpty() == false && element.charAt(0) == ':') {
+				if (!element.isEmpty() && element.charAt(0) == ':') {
 					int end = element.indexOf('|');
 					if (end > 0) {
 						try {

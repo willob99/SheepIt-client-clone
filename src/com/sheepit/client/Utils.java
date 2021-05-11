@@ -19,6 +19,15 @@
 
 package com.sheepit.client;
 
+import com.sheepit.client.Error.ServerCode;
+import com.sheepit.client.exception.FermeExceptionNoSpaceLeftOnDevice;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,31 +47,18 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.DatatypeConverter;
-
-import net.lingala.zip4j.model.UnzipParameters;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import com.sheepit.client.Error.ServerCode;
-import com.sheepit.client.exception.FermeExceptionNoSpaceLeftOnDevice;
-
 public class Utils {
-	public static int unzipFileIntoDirectory(String zipFileName_, String destinationDirectory, String password, Log log)
+	public static int unzipFileIntoDirectory(String zipFileName_, String destinationDirectory, char[] password, Log log)
 			throws FermeExceptionNoSpaceLeftOnDevice {
 		try {
 			ZipFile zipFile = new ZipFile(zipFileName_);
-			UnzipParameters unzipParameters = new UnzipParameters();
-			unzipParameters.setIgnoreDateTimeAttributes(true);
+//			unzipParameters.setIgnoreDateTimeAttributes(true);
 			
 			if (password != null && zipFile.isEncrypted()) {
 				zipFile.setPassword(password);
 			}
-			zipFile.extractAll(destinationDirectory, unzipParameters);
+//			zipFile.extractAll(destinationDirectory, unzipParameters);
+			zipFile.extractAll(destinationDirectory);
 		}
 		catch (ZipException e) {
 			StringWriter sw = new StringWriter();
@@ -135,7 +131,7 @@ public class Utils {
 			return;
 		}
 		if (file.isDirectory()) {
-			String files[] = file.list();
+			String[] files = file.list();
 			if (files != null) {
 				if (files.length != 0) {
 					for (String temp : files) {
