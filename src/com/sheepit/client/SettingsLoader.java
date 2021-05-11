@@ -224,22 +224,10 @@ public class SettingsLoader {
 		}
 	}
 	
-	public void loadFile() {
-		this.login = null;
-		this.password = null;
-		this.proxy = null;
-		this.hostname = null;
-		this.computeMethod = null;
-		this.gpu = null;
-		this.renderbucketSize = null;
-		this.cacheDir = null;
-		this.autoSignIn = null;
-		this.useSysTray = null;
-		this.ui = null;
-		this.priority = 19; // must be the same default as Configuration
-		this.ram = null;
-		this.renderTime = null;
-		this.theme = null;
+	
+	public void loadFile() throws Exception {
+		
+		initWithDefaults();
 		
 		if (new File(path).exists() == false) {
 			return;
@@ -319,8 +307,8 @@ public class SettingsLoader {
 				this.priority = Integer.parseInt(prop.getProperty("priority"));
 			}
 		}
-		catch (IOException io) {
-			io.printStackTrace();
+		catch (Exception e) {	//We need the try-catch here to ensure that the input file will be closed though we'll deal with the exception in the calling method
+			throw e;
 		}
 		finally {
 			if (input != null) {
@@ -343,8 +331,20 @@ public class SettingsLoader {
 			System.out.println("SettingsLoader::merge config is null");
 		}
 		
-		loadFile();
+		try {
+			loadFile();
+			applyConfigFileValues(config);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Exception while reading the config file. Falling back to defaults");
+			initWithDefaults();
+			applyConfigFileValues(config);
+		}
 		
+	}
+	
+	private void applyConfigFileValues(Configuration config) {
 		if (config.getLogin().isEmpty() && login != null) {
 			config.setLogin(login);
 		}
@@ -442,7 +442,7 @@ public class SettingsLoader {
 		}
 		
 		if (config.getTheme() == null) {
-			if (this.theme != null) {
+			if (this.theme != null && (this.theme.equals("dark") || this.theme.equals("light"))) {
 				config.setTheme(this.theme);
 			}
 			else {
@@ -457,6 +457,28 @@ public class SettingsLoader {
 		}
 		
 		config.setAutoSignIn(Boolean.parseBoolean(autoSignIn));
+	}
+	
+	private void initWithDefaults() {
+		Configuration defaultConfigValues = new Configuration(null, null, null);
+		this.login = null;
+		this.password = null;
+		this.proxy = null;
+		this.hostname = null;
+		this.computeMethod = null;
+		this.gpu = null;
+		this.renderbucketSize = null;
+		this.cacheDir = null;
+		this.autoSignIn = null;
+		this.useSysTray = null;
+		this.ui = null;
+		this.priority = defaultConfigValues.getPriority(); // must be the same default as Configuration
+		this.ram = null;
+		this.renderTime = null;
+		this.theme = null;
+		this.cores = String.valueOf(defaultConfigValues.getNbCores());
+		
+		
 	}
 	
 	@Override public String toString() {
