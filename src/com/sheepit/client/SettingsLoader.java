@@ -470,7 +470,7 @@ public class SettingsLoader {
 		this.renderbucketSize = null;
 		this.cacheDir = null;
 		this.autoSignIn = null;
-		this.useSysTray = null;
+		this.useSysTray = String.valueOf(defaultConfigValues.isUseSysTray());
 		this.ui = null;
 		this.priority = defaultConfigValues.getPriority(); // must be the same default as Configuration
 		this.ram = null;

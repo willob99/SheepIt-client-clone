@@ -97,7 +97,7 @@ import lombok.Data;
 		this.shutdownMode = "soft";
 		this.extras = "";
 		this.autoSignIn = false;
-		this.useSysTray = true;
+		this.useSysTray = false;
 		this.UIType = null;
 		this.theme = null;
 	}
