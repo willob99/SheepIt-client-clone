@@ -864,7 +864,7 @@ import lombok.Data;
 			}
 		}
 		
-		this.gui.status(String.format("Downloading %s", download_type), 0, 0);
+		this.gui.status(String.format("Downloading %s", download_type));
 		
 		// must download the archive
 		Error.Type ret = this.server.HTTPGetFile(url, local_path, this.gui, update_ui);

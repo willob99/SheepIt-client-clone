@@ -436,7 +436,9 @@ public class Server extends Thread {
 				written += len;
 				
 				if ((written - lastUpd) > 1000000) { // only update the gui every 1MB
-					gui_.status(status_, (int) (100.0 * written / size), written);
+					if (size != -1) { // no header for contentlength
+						gui_.status(status_, (int) (100.0 * written / size), written);
+					}
 					lastUpd = written;
 				}
 			}
