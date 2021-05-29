@@ -428,14 +428,26 @@ public class Settings implements Activity {
 		parent.getContentPane().add(compute_devices_panel, constraints);
 		
 		// priority
+		// ui display low -> high but the actual values are reversed
+		// -19 is highest priority
 		boolean high_priority_support = os.getSupportHighPriority();
 		priority = new JSlider(high_priority_support ? -19 : 0, 19);
-		priority.setMajorTickSpacing(19);
+		Hashtable<Integer, JLabel> labelTablePriority = new Hashtable<>();
+		labelTablePriority.put(high_priority_support ? -19 : 0, new JLabel("Low"));
+		labelTablePriority.put(19, new JLabel("High"));
+		priority.setLabelTable(labelTablePriority);
+		
 		priority.setMinorTickSpacing(1);
 		priority.setPaintTicks(true);
 		priority.setPaintLabels(true);
-		priority.setValue(config.getPriority());
-		JLabel priorityLabel = new JLabel(high_priority_support ? "Priority (High <-> Low):" : "Priority (Normal <-> Low):");
+		if (high_priority_support) {
+			// inverse
+			priority.setValue(-1 * config.getPriority());
+		}
+		else {
+			priority.setValue(19 - config.getPriority());
+		}
+		JLabel priorityLabel = new JLabel("Priority");
 		priorityLabel.setToolTipText(SwingTooltips.PRIORITY.getText());
 		
 		boolean showPrioritySlider = os.checkNiceAvailability();
@@ -770,7 +782,17 @@ public class Settings implements Activity {
 				config.setMaxRenderTime(max_rendertime);
 			}
 			
-			config.setUsePriority(priority.getValue());
+			// ui display low -> high but the actual values are reversed
+			// -19 is highest priority
+			OS os = OS.getOS();
+			boolean high_priority_support = os.getSupportHighPriority();
+			if (high_priority_support) {
+				// inverse
+				config.setUsePriority(-1 * priority.getValue());
+			}
+			else {
+				config.setUsePriority(19 - priority.getValue());
+			}
 			
 			String proxyText = null;
 			if (proxy != null) {
@@ -801,7 +823,7 @@ public class Settings implements Activity {
 				parent.setSettingsLoader(
 						new SettingsLoader(config.getConfigFilePath(), login.getText(), new String(password.getPassword()), proxyText, hostnameText, method,
 								selected_gpu, renderbucket_size, cpu_cores, max_ram, max_rendertime, cachePath, autoSignIn.isSelected(), useSysTray.isSelected(),
-								GuiSwing.type, themeOptionsGroup.getSelection().getActionCommand(), priority.getValue()));
+								GuiSwing.type, themeOptionsGroup.getSelection().getActionCommand(), config.getPriority()));
 				
 				// wait for successful authentication (to store the public key)
 				// or do we already have one?

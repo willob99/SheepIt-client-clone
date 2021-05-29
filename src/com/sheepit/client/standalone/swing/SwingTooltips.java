@@ -16,7 +16,7 @@ public enum SwingTooltips {
 	MEMORY("How much RAM Sheepit may use. This isn't a 100% safe limit, since Blender can erroneously use more, \n"
 		+ "but Sheepit will try its best to give you jobs that require less than what you've entered here."),
 	
-	PRIORITY("Which priority in your system the rendering process should have. Note that minus 19 is the highest, 19 is the lowest."),
+	PRIORITY("Which priority in your system the rendering process should have."),
 	
 	MINIMIZE_TO_SYSTRAY("Whether Sheepit should vanish into your system tray (the icons next to the clock in the bottom right) when you minimize the window."),
 	
