@@ -54,6 +54,8 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
@@ -289,6 +291,7 @@ public class Settings implements Activity {
 			renderbucketSize.setMajorTickSpacing(1);
 			renderbucketSize.setMinorTickSpacing(1);
 			renderbucketSize.setPaintTicks(true);
+			renderbucketSize.setSnapToTicks(true);
 			renderbucketSize.setPaintLabels(true);
 			renderbucketSizeLabel.setToolTipText(SwingTooltips.RENDERBUCKET_SIZE.getText());
 			
@@ -369,6 +372,12 @@ public class Settings implements Activity {
 			cpuCores.setMajorTickSpacing((int) (step));
 			cpuCores.setMinorTickSpacing(1);
 			cpuCores.setPaintTicks(true);
+			cpuCores.setSnapToTicks(true);
+			cpuCores.addChangeListener(new ChangeListener() {
+				@Override public void stateChanged(ChangeEvent e) {
+					cpuCores.setToolTipText(String.valueOf(cpuCores.getValue()));
+				}
+			});
 			cpuCores.setPaintLabels(true);
 			cpuCores.setValue(config.getNbCores() != -1 ? config.getNbCores() : cpuCores.getMaximum());
 			JLabel coreLabel = new JLabel("CPU cores:");
@@ -406,6 +415,11 @@ public class Settings implements Activity {
 		ram.setMajorTickSpacing(step);
 		ram.setLabelTable(labelTable);
 		ram.setPaintTicks(true);
+		ram.addChangeListener(new ChangeListener() {
+			@Override public void stateChanged(ChangeEvent e) {
+				ram.setToolTipText(String.format("%,d MiB", (ram.getValue() / 1024)));
+			}
+		});
 		ram.setPaintLabels(true);
 		ram.setValue((int) (config.getMaxMemory() != -1 ? config.getMaxMemory() : os.getMemory()));
 		JLabel ramLabel = new JLabel("Memory:");
@@ -439,6 +453,12 @@ public class Settings implements Activity {
 		
 		priority.setMinorTickSpacing(1);
 		priority.setPaintTicks(true);
+		priority.setSnapToTicks(true);
+		priority.addChangeListener(new ChangeListener() {
+			@Override public void stateChanged(ChangeEvent e) {
+				priority.setToolTipText(String.valueOf(priority.getValue()));
+			}
+		});
 		priority.setPaintLabels(true);
 		if (high_priority_support) {
 			// inverse
