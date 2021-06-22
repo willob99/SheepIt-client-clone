@@ -152,12 +152,12 @@ public class Settings implements Activity {
 		constraints.gridwidth = 2;
 		constraints.gridx = 0;
 		constraints.gridy = currentRow;
-		parent.getContentPane().add(labelImage, constraints);
+		parent.getContentPanel().add(labelImage, constraints);
 		
 		++currentRow;
 		
 		constraints.gridy = currentRow;
-		parent.getContentPane().add(new JLabel(" "), constraints);    // Add a separator between logo and first panel
+		parent.getContentPanel().add(new JLabel(" "), constraints);    // Add a separator between logo and first panel
 		
 		currentRow++;
 		
@@ -185,7 +185,7 @@ public class Settings implements Activity {
 		constraints.gridx = 0;
 		constraints.gridy = currentRow;
 		constraints.fill = GridBagConstraints.HORIZONTAL;
-		parent.getContentPane().add(authentication_panel, constraints);
+		parent.getContentPanel().add(authentication_panel, constraints);
 		
 		// Theme selection panel
 		CollapsibleJPanel themePanel = new CollapsibleJPanel(new GridLayout(1, 3), this);
@@ -215,7 +215,7 @@ public class Settings implements Activity {
 		constraints.gridy = currentRow;
 		constraints.gridwidth = 2;
 		
-		parent.getContentPane().add(themePanel, constraints);
+		parent.getContentPanel().add(themePanel, constraints);
 		
 		// directory
 		CollapsibleJPanel directory_panel = new CollapsibleJPanel(new GridLayout(1, 3), this);
@@ -248,7 +248,7 @@ public class Settings implements Activity {
 		constraints.gridy = currentRow;
 		constraints.gridwidth = 2;
 		
-		parent.getContentPane().add(directory_panel, constraints);
+		parent.getContentPanel().add(directory_panel, constraints);
 		
 		// compute devices
 		GridBagLayout gridbag = new GridBagLayout();
@@ -439,7 +439,7 @@ public class Settings implements Activity {
 		compute_devices_panel.add(new JLabel(" "), compute_devices_constraints);        // Add a space between lines
 		compute_devices_panel.add(ram);
 		
-		parent.getContentPane().add(compute_devices_panel, constraints);
+		parent.getContentPanel().add(compute_devices_panel, constraints);
 		
 		// priority
 		// ui display low -> high but the actual values are reversed
@@ -491,7 +491,7 @@ public class Settings implements Activity {
 		constraints.gridx = 0;
 		constraints.gridy = currentRow;
 		constraints.gridwidth = 2;
-		parent.getContentPane().add(compute_devices_panel, constraints);
+		parent.getContentPanel().add(compute_devices_panel, constraints);
 		
 		// other
 		CollapsibleJPanel advanced_panel = new CollapsibleJPanel(new GridLayout(4, 2), this);
@@ -538,7 +538,7 @@ public class Settings implements Activity {
 		constraints.gridx = 0;
 		constraints.gridy = currentRow;
 		constraints.gridwidth = 2;
-		parent.getContentPane().add(advanced_panel, constraints);
+		parent.getContentPanel().add(advanced_panel, constraints);
 		
 		// general settings
 		JPanel general_panel = new JPanel(new GridLayout(1, 2));
@@ -554,11 +554,11 @@ public class Settings implements Activity {
 		constraints.gridx = 0;
 		constraints.gridy = currentRow;
 		constraints.gridwidth = 2;
-		parent.getContentPane().add(general_panel, constraints);
+		parent.getContentPanel().add(general_panel, constraints);
 		
 		currentRow++;
 		constraints.gridy = currentRow;
-		parent.getContentPane().add(new JLabel(" "), constraints);    // Add a separator between last checkboxes and button
+		parent.getContentPanel().add(new JLabel(" "), constraints);    // Add a separator between last checkboxes and button
 		
 		currentRow++;
 		String buttonText = "Start";
@@ -574,7 +574,7 @@ public class Settings implements Activity {
 		constraints.gridwidth = 2;
 		constraints.gridx = 0;
 		constraints.gridy = currentRow;
-		parent.getContentPane().add(saveButton, constraints);
+		parent.getContentPanel().add(saveButton, constraints);
 
 		// Increase the size of the app Window to ensure it shows all the information with the Advanced Options panel opened.
 		parent.setSize(520,850);

@@ -235,7 +235,7 @@ public class Working implements Activity {
 		ImageIcon image = new ImageIcon(getClass().getResource("/sheepit-logo.png"));
 		JLabel labelImage = new JLabel(image);
 		labelImage.setAlignmentX(Component.CENTER_ALIGNMENT);
-		parent.getContentPane().add(labelImage);
+		parent.getContentPanel().add(labelImage);
 		
 		JPanel buttonsPanel = new JPanel(new GridLayout(2, 2));
 		
@@ -261,19 +261,19 @@ public class Working implements Activity {
 		buttonsPanel.add(blockJob);
 		buttonsPanel.add(exitAfterFrame);
 		
-		parent.getContentPane().setLayout(new GridBagLayout());
+		parent.getContentPanel().setLayout(new GridBagLayout());
 		GridBagConstraints global_constraints = new GridBagConstraints();
 		global_constraints.fill = GridBagConstraints.HORIZONTAL;
 		global_constraints.weightx = 1;
 		global_constraints.gridx = 0;
 		
-		parent.getContentPane().add(new JLabel(" "), global_constraints);        // Add a separator between logo and first panel
-		parent.getContentPane().add(current_project_panel, global_constraints);
-		parent.getContentPane().add(global_stats_panel, global_constraints);
-		parent.getContentPane().add(session_info_panel, global_constraints);
-		parent.getContentPane().add(last_frame_panel, global_constraints);
-		parent.getContentPane().add(new JLabel(" "), global_constraints);        // Add a separator between last panel and buttons
-		parent.getContentPane().add(buttonsPanel, global_constraints);
+		parent.getContentPanel().add(new JLabel(" "), global_constraints);        // Add a separator between logo and first panel
+		parent.getContentPanel().add(current_project_panel, global_constraints);
+		parent.getContentPanel().add(global_stats_panel, global_constraints);
+		parent.getContentPanel().add(session_info_panel, global_constraints);
+		parent.getContentPanel().add(last_frame_panel, global_constraints);
+		parent.getContentPanel().add(new JLabel(" "), global_constraints);        // Add a separator between last panel and buttons
+		parent.getContentPanel().add(buttonsPanel, global_constraints);
 		
 		// Set the proper size for the Working (if coming from Settings screen, the window size will be too big for the content!)
 		parent.setSize(520, 820);

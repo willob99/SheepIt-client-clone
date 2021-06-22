@@ -19,32 +19,9 @@
 
 package com.sheepit.client.standalone;
 
-import java.awt.AWTException;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
-import java.awt.image.BufferedImage;
-import java.net.URL;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import java.io.IOException;
-
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.EmptyBorder;
-import javax.imageio.ImageIO;
-
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import com.sheepit.client.Client;
 import com.sheepit.client.Configuration;
 import com.sheepit.client.Gui;
@@ -56,9 +33,33 @@ import com.sheepit.client.standalone.swing.activity.Working;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.formdev.flatlaf.FlatLightLaf;    // Required for dark & light mode
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLaf;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.EmptyBorder;
+import java.awt.AWTException;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GuiSwing extends JFrame implements Gui {
 	public static final String type = "swing";
@@ -143,7 +144,22 @@ public class GuiSwing extends JFrame implements Gui {
 		
 		panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
-		setContentPane(this.panel);
+		Dimension panelPrefSize = new Dimension(this.getSize().width - 20, this.getSize().height);
+		panel.setPreferredSize(panelPrefSize);
+		
+		JScrollPane scrollPane = new JScrollPane(panel);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		
+		//adjust scrollbar thickness
+		scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(13, 0));
+		scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 13));
+		
+		//adjust the speed of scrolling
+		scrollPane.getVerticalScrollBar().setUnitIncrement(50);
+		scrollPane.getHorizontalScrollBar().setUnitIncrement(50);
+		
+		setContentPane(scrollPane);
 		panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		
 		activityWorking = new Working(this);
@@ -160,10 +176,16 @@ public class GuiSwing extends JFrame implements Gui {
 			}
 			
 			// Apply the selected theme to swing components
-			FlatLaf.updateUI();
+			SwingUtilities.invokeAndWait(() -> FlatLaf.updateUI());
 		}
 		catch (UnsupportedLookAndFeelException e1) {
 			e1.printStackTrace();
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		catch (InvocationTargetException e) {
+			e.printStackTrace();
 		}
 		
 		while (waitingForAuthentication) {
@@ -381,6 +403,10 @@ public class GuiSwing extends JFrame implements Gui {
 		
 		return icon;
 		
+	}
+	
+	public JPanel getContentPanel() {
+		return this.panel;
 	}
 	
 	private Image extractImageFromSprite(int spriteNumber) {
