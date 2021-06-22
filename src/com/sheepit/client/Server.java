@@ -272,6 +272,8 @@ public class Server extends Thread {
 			
 			HttpUrl.Builder urlBuilder = Objects.requireNonNull(HttpUrl.parse(this.getPage("request-job"))).newBuilder()
 				.addQueryParameter("computemethod", String.valueOf(user_config.computeMethodToInt()))
+				.addQueryParameter("network_dl", String.valueOf(dlStats.getRawAverageSessionSpeed()))
+				.addQueryParameter("network_up", String.valueOf(ulStats.getRawAverageSessionSpeed()))
 				.addQueryParameter("cpu_cores", String.valueOf(user_config.getNbCores() == -1 ? os.getCPU().cores() : user_config.getNbCores()))
 				.addQueryParameter("ram_max", String.valueOf(maxMemory))
 				.addQueryParameter("rendertime_max", String.valueOf(user_config.getMaxRenderTime()));
@@ -281,7 +283,7 @@ public class Server extends Thread {
 					.addQueryParameter("gpu_ram", String.valueOf(user_config.getGPUDevice().getMemory()))
 					.addQueryParameter("gpu_type", user_config.getGPUDevice().getType());
 			}
-
+			
 			Response response = this.HTTPRequest(urlBuilder, RequestBody.create(MediaType.parse("application/xml"), this.generateXMLForMD5cache()));
 			
 			int r = response.code();

@@ -33,4 +33,8 @@ public class TransferStats {
 			return Utils.formatDataConsumption((long) (this.bytes / (0.1f)));
 		}
 	}
+	
+	public long getRawAverageSessionSpeed() {
+		return this.millis != 0 ? (long) (this.bytes / (this.millis / 1000f)) : 0;
+	}
 }
