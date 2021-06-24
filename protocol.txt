@@ -6,6 +6,7 @@ Parameters as GET:
     * password: User's password in plain text.
     * version: Client's version, for example 3.3.1762.
     * os: Computer's operating system, at the moment only "windows", "mac" and "linux" are supported.
+    * os_version: Full version of os, for example "Windows 8.1".
     * bits: Architecture size, at the moment only "32bit" and "64bit" are supported.
     * cpu_family: CPU's family, on linux it can be found in /proc/cpuinfo via the attribute "cpu family".
     * cpu_model: CPU's model, on linux it can be found in /proc/cpuinfo via the attribute "model".

@@ -29,6 +29,13 @@ public abstract class OS {
 	
 	public abstract String name();
 	
+	/** Get the full version of the os.
+	 * For example windows, should give "windows 8.1"
+	 */
+	public String getVersion() {
+		return System.getProperty("os.name").toLowerCase();
+	}
+	
 	public abstract CPU getCPU();
 	
 	public abstract long getMemory();

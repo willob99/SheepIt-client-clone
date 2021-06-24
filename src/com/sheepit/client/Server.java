@@ -197,6 +197,7 @@ public class Server extends Thread {
 				.add("cpu_model_name", os.getCPU().name())
 				.add("cpu_cores", String.valueOf(user_config.getNbCores() == -1 ? os.getCPU().cores() : user_config.getNbCores()))
 				.add("os", os.name())
+				.add("os_version", os.getVersion())
 				.add("ram", String.valueOf(os.getMemory()))
 				.add("bits", os.getCPU().arch())
 				.add("version", user_config.getJarVersion())
