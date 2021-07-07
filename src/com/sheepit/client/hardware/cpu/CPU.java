@@ -20,7 +20,8 @@
 package com.sheepit.client.hardware.cpu;
 
 public class CPU {
-	final public static int MIN_RENDERBUCKET_SIZE = 32;
+	public static final int MIN_RENDERBUCKET_SIZE = 32;
+	public static final int MIN_CORES = Runtime.getRuntime().availableProcessors() > 1 ? 2 : 1;
 	private String name;
 	private String model;
 	private String family;

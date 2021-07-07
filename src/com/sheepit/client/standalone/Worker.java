@@ -71,7 +71,7 @@ public class Worker {
 	
 	@Option(name = "-compute-method", usage = "CPU: only use cpu, GPU: only use gpu, CPU_GPU: can use cpu and gpu (not at the same time) if -gpu is not use it will not use the gpu", metaVar = "CPU", required = false) private String method = null;
 	
-	@Option(name = "-cores", usage = "Number of cores/threads to use for the render", metaVar = "3", required = false) private int nb_cores = -1;
+	@Option(name = "-cores", usage = "Number of cores/threads to use for the render. The minimum is two cores unless your system only has one", metaVar = "3", required = false) private int nb_cores = -1;
 	
 	@Option(name = "-memory", usage = "Maximum memory allow to be used by renderer, number with unit (800M, 2G, ...)", required = false) private String max_ram = null;
 	

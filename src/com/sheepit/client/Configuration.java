@@ -37,6 +37,7 @@ import com.sheepit.client.os.OS;
 import lombok.Data;
 
 @Data public class Configuration {
+	
 	public enum ComputeType {
 		CPU_GPU, CPU, GPU
 	} // accept job for ...

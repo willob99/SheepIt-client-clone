@@ -50,6 +50,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.JavaNetCookieJar;
 
+import com.sheepit.client.hardware.cpu.CPU;
 import com.sheepit.client.Configuration.ComputeType;
 import com.sheepit.client.Error.ServerCode;
 import com.sheepit.client.datamodel.CacheFileMD5;
@@ -195,7 +196,7 @@ public class Server extends Thread {
 				.add("cpu_family", os.getCPU().family())
 				.add("cpu_model", os.getCPU().model())
 				.add("cpu_model_name", os.getCPU().name())
-				.add("cpu_cores", String.valueOf(user_config.getNbCores() == -1 ? os.getCPU().cores() : user_config.getNbCores()))
+				.add("cpu_cores", String.valueOf(user_config.getNbCores() == -1 ? os.getCPU().cores() : Math.max(CPU.MIN_CORES, user_config.getNbCores())))
 				.add("os", os.name())
 				.add("os_version", os.getVersion())
 				.add("ram", String.valueOf(os.getMemory()))
@@ -275,7 +276,8 @@ public class Server extends Thread {
 				.addQueryParameter("computemethod", String.valueOf(user_config.computeMethodToInt()))
 				.addQueryParameter("network_dl", String.valueOf(dlStats.getRawAverageSessionSpeed()))
 				.addQueryParameter("network_up", String.valueOf(ulStats.getRawAverageSessionSpeed()))
-				.addQueryParameter("cpu_cores", String.valueOf(user_config.getNbCores() == -1 ? os.getCPU().cores() : user_config.getNbCores()))
+				.addQueryParameter("cpu_cores", String.valueOf(user_config.getNbCores() == -1 ? os.getCPU().cores() :
+					(Math.max(user_config.getNbCores(), CPU.MIN_CORES))))
 				.addQueryParameter("ram_max", String.valueOf(maxMemory))
 				.addQueryParameter("rendertime_max", String.valueOf(user_config.getMaxRenderTime()));
 			

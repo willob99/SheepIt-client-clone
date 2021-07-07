@@ -368,7 +368,7 @@ public class Settings implements Activity {
 				display = (double) cpu.cores() / step;
 			}
 			
-			cpuCores = new JSlider(1, cpu.cores());
+			cpuCores = new JSlider(CPU.MIN_CORES, cpu.cores());
 			cpuCores.setMajorTickSpacing((int) (step));
 			cpuCores.setMinorTickSpacing(1);
 			cpuCores.setPaintTicks(true);
@@ -379,7 +379,7 @@ public class Settings implements Activity {
 				}
 			});
 			cpuCores.setPaintLabels(true);
-			cpuCores.setValue(config.getNbCores() != -1 ? config.getNbCores() : cpuCores.getMaximum());
+			cpuCores.setValue(config.getNbCores() != -1 ? (Math.max(config.getNbCores(), CPU.MIN_CORES)): cpuCores.getMaximum());
 			JLabel coreLabel = new JLabel("CPU cores:");
 			coreLabel.setToolTipText(SwingTooltips.CPU_CORES.getText());
 			
