@@ -38,14 +38,15 @@ import com.sheepit.client.hardware.gpu.GPUDevice;
 import com.sheepit.client.standalone.GuiSwing;
 import com.sheepit.client.standalone.GuiText;
 import com.sheepit.client.standalone.GuiTextOneLine;
-import lombok.Setter;
+import lombok.Data;
 
+@Data
 public class SettingsLoader {
 	private String path;
 	
 	private String login;
 	
-	@Setter private String password;
+	private String password;
 	
 	private String proxy;
 	private String hostname;
@@ -58,6 +59,7 @@ public class SettingsLoader {
 	private String cacheDir;
 	private String autoSignIn;
 	private String useSysTray;
+	private String headless;
 	private String ui;
 	private String theme;
 	private int priority;
@@ -72,7 +74,7 @@ public class SettingsLoader {
 	}
 	
 	public SettingsLoader(String path_, String login_, String password_, String proxy_, String hostname_, ComputeType computeMethod_, GPUDevice gpu_,
-		int renderbucketSize_, int cores_, long maxRam_, int maxRenderTime_, String cacheDir_, boolean autoSignIn_, boolean useSysTray_, String ui_,
+		int renderbucketSize_, int cores_, long maxRam_, int maxRenderTime_, String cacheDir_, boolean autoSignIn_, boolean useSysTray_, boolean isHeadless, String ui_,
 		String theme_, int priority_) {
 		if (path_ == null) {
 			path = getDefaultFilePath();
@@ -87,6 +89,7 @@ public class SettingsLoader {
 		cacheDir = cacheDir_;
 		autoSignIn = String.valueOf(autoSignIn_);
 		useSysTray = String.valueOf(useSysTray_);
+		headless = String.valueOf(isHeadless);
 		ui = ui_;
 		priority = priority_;
 		theme = theme_;
@@ -182,6 +185,10 @@ public class SettingsLoader {
 			
 			if (useSysTray != null) {
 				prop.setProperty("use-systray", useSysTray);
+			}
+			
+			if (headless != null) {
+				prop.setProperty("headless", headless);
 			}
 			
 			if (ui != null) {
@@ -295,6 +302,10 @@ public class SettingsLoader {
 				this.useSysTray = prop.getProperty("use-systray");
 			}
 			
+			if (prop.containsKey("headless")) {
+				this.headless = prop.getProperty("headless");
+			}
+			
 			if (prop.containsKey("ui")) {
 				this.ui = prop.getProperty("ui");
 			}
@@ -358,6 +369,10 @@ public class SettingsLoader {
 		
 		if ((config.getHostname() == null || config.getHostname().isEmpty() || config.getHostname().equals(config.getDefaultHostname())) && hostname != null) {
 			config.setHostname(hostname);
+		}
+		
+		if (!config.isHeadless() && headless != null) {
+			config.setHeadless(Boolean.parseBoolean(headless));
 		}
 		
 		if (config.getPriority() == 19) { // 19 is default value
@@ -471,6 +486,7 @@ public class SettingsLoader {
 		this.cacheDir = null;
 		this.autoSignIn = null;
 		this.useSysTray = String.valueOf(defaultConfigValues.isUseSysTray());
+		this.headless = String.valueOf(defaultConfigValues.isHeadless());
 		this.ui = null;
 		this.priority = defaultConfigValues.getPriority(); // must be the same default as Configuration
 		this.ram = null;
@@ -483,7 +499,7 @@ public class SettingsLoader {
 	
 	@Override public String toString() {
 		return String.format(
-			"SettingsLoader [path=%s, login=%s, password=%s, computeMethod=%s, gpu=%s, renderbucket-size=%s, cacheDir=%s, theme=%s, priority=%d, autosign=%s, usetray=%s]",
-			path, login, password, computeMethod, gpu, renderbucketSize, cacheDir, theme, priority, autoSignIn, useSysTray);
+			"SettingsLoader [path=%s, login=%s, password=%s, computeMethod=%s, gpu=%s, renderbucket-size=%s, cacheDir=%s, theme=%s, priority=%d, autosign=%s, usetray=%s, headless=%s]",
+			path, login, password, computeMethod, gpu, renderbucketSize, cacheDir, theme, priority, autoSignIn, useSysTray, headless);
 	}
 }

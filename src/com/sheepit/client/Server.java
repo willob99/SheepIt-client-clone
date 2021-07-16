@@ -205,7 +205,7 @@ public class Server extends Thread {
 				.add("hostname", user_config.getHostname())
 				.add("ui", client.getGui().getClass().getSimpleName())
 				.add("extras", user_config.getExtras())
-				.add("headless", java.awt.GraphicsEnvironment.isHeadless() ? "1" : "0")
+				.add("headless", java.awt.GraphicsEnvironment.isHeadless() ? "1" : (user_config.isHeadless() ? "1" : "0"))
 				.build();
 			
 			this.log.debug("Server::getConfiguration url " + remoteURL.build().toString());
@@ -252,6 +252,7 @@ public class Server extends Thread {
 			return Error.Type.UNKNOWN;
 		}
 		
+		client.setSessionStarted(true);
 		this.client.getGui().successfulAuthenticationEvent(publickey);
 		
 		return Error.Type.OK;

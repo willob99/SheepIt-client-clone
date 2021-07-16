@@ -291,7 +291,7 @@ public class GuiSwing extends JFrame implements Gui {
 	
 	@Override public void successfulAuthenticationEvent(String publickey) {
 		if (settingsLoader != null) {
-			if (publickey != null) {
+			if (publickey != null && activitySettings.getLaunchConfig().getLogin().equals(settingsLoader.getLogin())) {
 				settingsLoader.setPassword(publickey);
 			}
 			settingsLoader.saveFile();

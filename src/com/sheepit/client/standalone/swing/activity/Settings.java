@@ -75,6 +75,8 @@ import com.sheepit.client.os.OS;
 import com.sheepit.client.standalone.GuiSwing;
 import com.sheepit.client.standalone.swing.SwingTooltips;
 import com.sheepit.client.standalone.swing.components.CollapsibleJPanel;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 public class Settings implements Activity {
 	private static final String DUMMY_CACHE_DIR = "Auto detected";
@@ -89,6 +91,7 @@ public class Settings implements Activity {
 	private JCheckBox useCPU;
 	private List<JCheckBoxGPU> useGPUs;
 	private JCheckBox useSysTray;
+	private JCheckBox headlessCheckbox;
 	private JLabel renderbucketSizeLabel;
 	private JSlider renderbucketSize;
 	private JSlider cpuCores;
@@ -108,18 +111,25 @@ public class Settings implements Activity {
 	
 	private boolean haveAutoStarted;
 	private boolean useSysTrayPrevState;
+	private boolean isHeadlessPrevState;
+	private boolean sessionStarted;	//indicates whether the settings activity gets shown on launch or mid-session.
+									// it should only be false when the settings activity gets shown right after launch
+	
+	@Getter private Configuration launchConfig;	//the config we launched with, combined out of launch arguments and config file settings
 	
 	public Settings(GuiSwing parent_) {
 		parent = parent_;
 		cacheDir = null;
 		useGPUs = new LinkedList<JCheckBoxGPU>();
 		haveAutoStarted = false;
+		sessionStarted = false;
 	}
 	
 	@Override public void show() {
 		Configuration config = parent.getConfiguration();
 		new SettingsLoader(config.getConfigFilePath()).merge(config);
 		useSysTrayPrevState = config.isUseSysTray();
+		isHeadlessPrevState = config.isHeadless();
 		
 		applyTheme(config.getTheme());    // apply the proper theme (light/dark)
 		
@@ -494,7 +504,7 @@ public class Settings implements Activity {
 		parent.getContentPanel().add(compute_devices_panel, constraints);
 		
 		// other
-		CollapsibleJPanel advanced_panel = new CollapsibleJPanel(new GridLayout(4, 2), this);
+		CollapsibleJPanel advanced_panel = new CollapsibleJPanel(new GridLayout(5, 2), this);
 		advanced_panel.setBorder(BorderFactory.createTitledBorder("Advanced options"));
 		
 		JLabel useSysTrayLabel = new JLabel("Minimize to SysTray");
@@ -504,6 +514,12 @@ public class Settings implements Activity {
 		useSysTray.setSelected(config.isUseSysTray());
 		advanced_panel.add(useSysTrayLabel);
 		advanced_panel.add(useSysTray);
+		
+		JLabel headlessLabel = new JLabel("Block Eevee projects");
+		headlessCheckbox = new JCheckBox();
+		headlessCheckbox.setSelected(config.isHeadless());
+		advanced_panel.add(headlessLabel);
+		advanced_panel.add(headlessCheckbox);
 		
 		JLabel proxyLabel = new JLabel("Proxy:");
 		proxyLabel.setToolTipText("http://login:password@host:port\n" + SwingTooltips.PROXY.getText());
@@ -583,6 +599,11 @@ public class Settings implements Activity {
 			// auto start
 			haveAutoStarted = true;
 			new SaveAction().actionPerformed(null);
+		}
+		
+		//check so the launch config does not get overwritten if the user goes back to the settings activity mid-session
+		if(!sessionStarted) {
+			launchConfig = new Configuration(config);
 		}
 	}
 	
@@ -737,6 +758,10 @@ public class Settings implements Activity {
 				return;
 			}
 			
+			if(config.isAutoSignIn() && launchConfig == null) {
+				launchConfig = new Configuration(config);
+			}
+			
 			if (themeOptionsGroup.getSelection().getActionCommand() != null)
 				config.setTheme(themeOptionsGroup.getSelection().getActionCommand());
 			
@@ -756,17 +781,8 @@ public class Settings implements Activity {
 					selected_gpu = box.getGPUDevice();
 				}
 			}
-			
-			ComputeType method = ComputeType.CPU;
-			if (useCPU.isSelected() && selected_gpu == null) {
-				method = ComputeType.CPU;
-			}
-			else if (useCPU.isSelected() == false && selected_gpu != null) {
-				method = ComputeType.GPU;
-			}
-			else if (useCPU.isSelected() && selected_gpu != null) {
-				method = ComputeType.CPU_GPU;
-			}
+
+			ComputeType method = getComputeType(selected_gpu);
 			config.setComputeMethod(method);
 			
 			if (selected_gpu != null) {
@@ -776,7 +792,9 @@ public class Settings implements Activity {
 			int renderbucket_size = -1;
 			if (renderbucketSize != null) {
 				renderbucket_size = (int) Math.pow(2, (renderbucketSize.getValue() + 5));
+				System.out.println(config.getRenderbucketSize() + " calced: " + renderbucket_size);
 			}
+			config.setRenderbucketSize(renderbucket_size);
 			
 			int cpu_cores = -1;
 			if (cpuCores != null) {
@@ -814,6 +832,8 @@ public class Settings implements Activity {
 				config.setUsePriority(19 - priority.getValue());
 			}
 			
+			config.setHeadless(headlessCheckbox.isSelected());
+			
 			String proxyText = null;
 			if (proxy != null) {
 				try {
@@ -826,35 +846,164 @@ public class Settings implements Activity {
 					System.exit(2);
 				}
 			}
+			config.setProxy(proxyText);
 			
 			parent.setCredentials(login.getText(), new String(password.getPassword()));
-			
-			String cachePath = null;
-			if (config.isUserHasSpecifiedACacheDir() && config.getCacheDirForSettings() != null) {
-				cachePath = config.getCacheDirForSettings().getAbsolutePath();
-			}
 			
 			String hostnameText = hostname.getText();
 			if (hostnameText == null || hostnameText.isEmpty()) {
 				hostnameText = parent.getConfiguration().getHostname();
 			}
+			config.setHostname(hostnameText);
+			config.setAutoSignIn(autoSignIn.isSelected());
+			config.setUseSysTray(useSysTray.isSelected());
+//			config.setUIType(GuiSwing.type);
+			
+			
 			
 			if (saveFile.isSelected()) {
-				parent.setSettingsLoader(
-						new SettingsLoader(config.getConfigFilePath(), login.getText(), new String(password.getPassword()), proxyText, hostnameText, method,
-								selected_gpu, renderbucket_size, cpu_cores, max_ram, max_rendertime, cachePath, autoSignIn.isSelected(), useSysTray.isSelected(),
-								GuiSwing.type, themeOptionsGroup.getSelection().getActionCommand(), config.getPriority()));
+				//save config file values to seperate config for later comparison (only necessary for GuiSwing as the other uis dont save any configs)
+				Configuration configFileConfiguration = new Configuration(null, "", "");
+				configFileConfiguration.setConfigFilePath(config.getConfigFilePath());
+				parent.getSettingsLoader().merge(configFileConfiguration);
+			
+				mergeChanges(launchConfig, config, configFileConfiguration);
+//				parent.setSettingsLoader(
+//						new SettingsLoader(config.getConfigFilePath(), login.getText(), new String(password.getPassword()), proxyText, hostnameText, method,
+//								selected_gpu, renderbucket_size, cpu_cores, max_ram, max_rendertime, cachePath, autoSignIn.isSelected(), useSysTray.isSelected(),
+//								headlessCheckbox.isSelected(), GuiSwing.type, themeOptionsGroup.getSelection().getActionCommand(), config.getPriority()));
 				
 				// wait for successful authentication (to store the public key)
 				// or do we already have one?
 				if (parent.getClient().getServer().getServerConfig() != null && parent.getClient().getServer().getServerConfig().getPublickey() != null) {
 					parent.getSettingsLoader().saveFile();
-				}
-				
-				if (useSysTrayPrevState != useSysTray.isSelected()) {
-					JOptionPane.showMessageDialog(null, "You must restart the SheepIt app for the SysTray change to take effect");
+					sessionStarted = true;
 				}
 			}
+			
+			boolean sysTrayChanged = useSysTray.isSelected() != useSysTrayPrevState;
+			boolean headlessChanged = headlessCheckbox.isSelected() != isHeadlessPrevState;
+			boolean restartRequired = sysTrayChanged || headlessChanged;
+			if (restartRequired) {
+				String warning = "The following changes require a restart to take effect: %s";
+				List<String> changes = new LinkedList<>();
+				
+				if (sysTrayChanged) {
+					changes.add("Minimize to SysTray");
+				}
+				
+				if (headlessChanged && sessionStarted) {    //only show this when the setting gets changed in the middle of a session, not on launch
+					changes.add("Block Eevee Projects");
+				}
+				
+				if (changes.size() > 0) {
+					warning = String.format(warning, String.join(", ", changes));
+					JOptionPane.showMessageDialog(null, warning);
+				}
+			}
+		}
+		
+		@NotNull private ComputeType getComputeType(GPUDevice selected_gpu) {
+			ComputeType method = ComputeType.CPU;
+			if (useCPU.isSelected() && selected_gpu == null) {
+				method = ComputeType.CPU;
+			}
+			else if (useCPU.isSelected() == false && selected_gpu != null) {
+				method = ComputeType.GPU;
+			}
+			else if (useCPU.isSelected() && selected_gpu != null) {
+				method = ComputeType.CPU_GPU;
+			}
+			return method;
+		}
+		
+		private void mergeChanges(Configuration launchConfig, Configuration workingConfig, Configuration configFileConfiguration) {
+			
+			/* if the config value we are checking is different from the config file (e.g. because it got passed as a launch argument) we leave the settingsLoader as is
+			 as to not overwrite it with the launch argument. However, if it was changed after launch we do save it
+			 */
+			if (saveSetting(launchConfig.getLogin(), configFileConfiguration.getLogin(), workingConfig.getLogin())) {
+				parent.getSettingsLoader().setLogin(workingConfig.getLogin());
+			}
+			
+			if (saveSetting(launchConfig.getPassword(), configFileConfiguration.getPassword(), workingConfig.getPassword())) {
+				parent.getSettingsLoader().setPassword(workingConfig.getPassword());
+			}
+			
+			if (saveSetting(launchConfig.getHostname(), configFileConfiguration.getHostname(), workingConfig.getHostname())) {
+				parent.getSettingsLoader().setHostname(workingConfig.getHostname());
+			}
+			
+			if (saveSetting(launchConfig.getProxy(), configFileConfiguration.getProxy(), workingConfig.getProxy())) {
+				parent.getSettingsLoader().setProxy(workingConfig.getProxy());
+			}
+			
+			if (saveSetting(launchConfig.getNbCores(), configFileConfiguration.getNbCores(), workingConfig.getNbCores())) {
+				parent.getSettingsLoader().setCores(String.valueOf(workingConfig.getNbCores()));
+			}
+			
+			if (saveSetting(launchConfig.getMaxMemory(), configFileConfiguration.getMaxMemory(), workingConfig.getMaxMemory())) {
+				parent.getSettingsLoader().setRam(String.valueOf(workingConfig.getMaxMemory()));
+			}
+			
+			if (saveSetting(launchConfig.getMaxRenderTime(), configFileConfiguration.getMaxRenderTime(), workingConfig.getMaxRenderTime())) {
+				parent.getSettingsLoader().setRenderTime(String.valueOf(workingConfig.getMaxRenderTime()));
+			}
+			
+			if (saveSetting(launchConfig.getGPUDevice(), configFileConfiguration.getGPUDevice(), workingConfig.getGPUDevice())) {
+				parent.getSettingsLoader().setGpu(workingConfig.getGPUDevice().getId());	//TODO presumably works
+			}
+			
+			if (saveSetting(launchConfig.getRenderbucketSize(), configFileConfiguration.getRenderbucketSize(), workingConfig.getRenderbucketSize())) {
+				parent.getSettingsLoader().setRenderbucketSize(String.valueOf(workingConfig.getRenderbucketSize()));
+			}
+			
+			if (saveSetting(getCachePath(launchConfig), getCachePath(configFileConfiguration), getCachePath(workingConfig))) {
+				parent.getSettingsLoader().setCacheDir(getCachePath(workingConfig));
+			}
+			
+			//not changeable through launch arguments
+			if (saveSetting(launchConfig.isAutoSignIn(), configFileConfiguration.isAutoSignIn(), workingConfig.isAutoSignIn())) {
+				parent.getSettingsLoader().setAutoSignIn(String.valueOf(workingConfig.isAutoSignIn()));
+			}
+			
+			if (saveSetting(launchConfig.isUseSysTray(), configFileConfiguration.isUseSysTray(), workingConfig.isUseSysTray())) {
+				parent.getSettingsLoader().setUseSysTray(String.valueOf(workingConfig.isUseSysTray()));
+			}
+			
+			if (saveSetting(launchConfig.isHeadless(), configFileConfiguration.isHeadless(), workingConfig.isHeadless())) {
+				parent.getSettingsLoader().setHeadless(String.valueOf(workingConfig.isHeadless()));
+			}
+			
+			//not needed as the user has no way of modifying that setting after launch
+//			if (saveSetting(launchConfig.getUIType(), configFileConfiguration.getUIType(), workingConfig.getUIType())) {
+//				parent.getSettingsLoader().setUi(workingConfig.getUIType());
+//			}
+			
+			if (saveSetting(launchConfig.getTheme(), configFileConfiguration.getTheme(), workingConfig.getTheme())) {
+				parent.getSettingsLoader().setTheme(workingConfig.getTheme());
+			}
+			
+			if (saveSetting(launchConfig.getPriority(), configFileConfiguration.getPriority(), workingConfig.getPriority())) {
+				parent.getSettingsLoader().setPriority(workingConfig.getPriority());
+			}
+
+			
+		}
+		
+		private <T> boolean saveSetting(T launchValue, T configFileValue, T workingValue) {
+			if (workingValue == null) {
+				return false;
+			}
+			return !workingValue.equals(configFileValue) && !workingValue.equals(launchValue);
+		}
+		
+		private String getCachePath(Configuration config) {
+			String cachePath = null;
+			if (config.isUserHasSpecifiedACacheDir() && config.getCacheDirForSettings() != null) {
+				cachePath = config.getCacheDirForSettings().getAbsolutePath();
+			}
+			return cachePath;
 		}
 	}
 	

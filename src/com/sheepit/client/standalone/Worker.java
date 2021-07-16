@@ -110,6 +110,8 @@ public class Worker {
 	
 	@Option(name = "-hostname", usage = "Set a custom hostname name (name change will be lost when client is closed)", required = false) private String hostname = null;
 	
+	@Option(name = "--headless", usage = "Mark your client manually as headless to block Eevee projects", required = false) private boolean headless = java.awt.GraphicsEnvironment.isHeadless();
+	
 	public static void main(String[] args) {
 		if (OS.getOS() == null) {
 			System.err.println(Error.humanString(Error.Type.OS_NOT_SUPPORTED));
@@ -181,6 +183,8 @@ public class Worker {
 		// parameter is detected, args4j will store (boolean)true in the useSysTray variable but we want to store (boolean)false in the configuration class
 		// for further checks.
 		config.setUseSysTray(!useSysTray);
+		
+		config.setHeadless(headless);
 		
 		if (gpu_device != null) {
 			if (gpu_device.startsWith(Nvidia.TYPE) == false && gpu_device.startsWith(OpenCL.TYPE) == false) {
@@ -427,7 +431,8 @@ public class Worker {
 			config.setConfigFilePath(config_file);
 		}
 		
-		new SettingsLoader(config_file).merge(config);
+		SettingsLoader settingsLoader = new SettingsLoader(config_file);
+		settingsLoader.merge(config);
 		Log.getInstance(config).debug("client version " + config.getJarVersion());
 		
 		// Hostname change will overwrite the existing one (default or read from configuration file) but changes will be lost when the client closes
@@ -470,6 +475,7 @@ public class Worker {
 					System.exit(3);
 				}
 				gui = new GuiSwing(config.isUseSysTray(), title);
+				((GuiSwing) gui).setSettingsLoader(settingsLoader);
 				break;
 		}
 		Client cli = new Client(gui, config, server);

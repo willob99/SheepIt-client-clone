@@ -69,6 +69,7 @@ import lombok.Data;
 	private BlockingQueue<QueuedJob> jobsToValidate;
 	private boolean isValidatingJob;
 	private long startTime;
+	private boolean sessionStarted;
 	
 	private boolean disableErrorSending;
 	private boolean running;
@@ -99,6 +100,8 @@ import lombok.Data;
 		this.uploadQueueSize = 0;
 		this.uploadQueueVolume = 0;
 		this.noJobRetryIter = 0;
+		
+		this.sessionStarted = false;
 	}
 	
 	public String toString() {

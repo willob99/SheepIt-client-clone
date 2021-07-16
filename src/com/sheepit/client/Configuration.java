@@ -34,8 +34,10 @@ import java.util.List;
 import com.sheepit.client.hardware.cpu.CPU;
 import com.sheepit.client.hardware.gpu.GPUDevice;
 import com.sheepit.client.os.OS;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
+@AllArgsConstructor
 @Data public class Configuration {
 	
 	public enum ComputeType {
@@ -67,6 +69,7 @@ import lombok.Data;
 	private String extras;
 	private boolean autoSignIn;
 	private boolean useSysTray;
+	private boolean headless;
 	private String UIType;
 	private String hostname;
 	private String theme;
@@ -99,8 +102,16 @@ import lombok.Data;
 		this.extras = "";
 		this.autoSignIn = false;
 		this.useSysTray = false;
+		this.headless = java.awt.GraphicsEnvironment.isHeadless();
 		this.UIType = null;
 		this.theme = null;
+	}
+	
+	public Configuration(Configuration config) {
+		this(config.configFilePath, config.workingDirectory, config.sharedDownloadsDirectory, config.storageDirectory, config.userHasSpecifiedACacheDir,
+			config.static_exeDirName, config.login, config.password, config.proxy, config.maxUploadingJob, config.nbCores, config.maxMemory, config.maxRenderTime,
+			config.priority, config.computeMethod, config.GPUDevice, config.renderbucketSize, config.detectGPUs, config.printLog, config.requestTime, config.shutdownTime,
+			config.shutdownMode, config.extras, config.autoSignIn, config.useSysTray, config.headless, config.UIType, config.hostname, config.theme);
 	}
 	
 	public String toString() {
