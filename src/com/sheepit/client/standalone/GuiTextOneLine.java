@@ -209,7 +209,7 @@ public class GuiTextOneLine implements Gui {
 		if (line.length() + project.length() > 120) {
 			// If the line without the project name is already >120 characters (might happen if the user has thousands of frames and millions of points in the
 			// session + is exiting after all frames are uploaded) then set the line to 117c to avoid a negative number exception in substring function
-			int lineLength = (line.length() >= 120 ? 117 : line.length());
+			int lineLength = Math.min(line.length(), 117);
 			line = String.format(line, project.substring(0, 117 - lineLength) + "...");
 		}
 		else {
