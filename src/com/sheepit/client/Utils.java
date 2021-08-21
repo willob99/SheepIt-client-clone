@@ -204,9 +204,16 @@ public class Utils {
 	public static boolean noFreeSpaceOnDisk(String destination_) {
 		try {
 			File file = new File(destination_);
-			return (file.getUsableSpace() < 512 * 1024); // at least the same amount as Server.HTTPGetFile
+			for (int i = 0; i < 3; i++) { //We poll repeatedly because getUsableSpace() might just return 0 on busy disk IO
+				if (file.getUsableSpace() > 512 * 1024) { // at least the same amount as Server.HTTPGetFile
+					return false; // If we are not "full", we are done, no need for additional polling
+				} else if (i < 2) {
+					Thread.sleep((long) (Math.random() * (100 - 40 + 1) + 40)); //Wait between 40 and 100 milliseconds
+				}
+			}
+			return true;
 		}
-		catch (SecurityException e) {
+		catch (SecurityException | InterruptedException e) {
 		}
 		
 		return false;
