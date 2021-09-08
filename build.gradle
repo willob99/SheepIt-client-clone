@@ -3,7 +3,7 @@ plugins {
 	id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
-sourceCompatibility = '1.11' //comment to poke gitlab CI
+sourceCompatibility = '1.11'
 targetCompatibility = '1.11'
 
 compileJava {
@@ -26,7 +26,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
 	implementation 'args4j:args4j:2.33'
-	implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '2.7.0'
+	implementation 'net.lingala.zip4j:zip4j:2.7.0'
 	implementation 'net.java.dev.jna:jna-platform:5.0.0' // couldnt upgrade
 	implementation 'org.simpleframework:simple-xml:2.7.1'
 	implementation 'javax.xml.bind:jaxb-api:2.3.1'
