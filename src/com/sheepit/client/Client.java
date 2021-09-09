@@ -58,6 +58,7 @@ import com.sheepit.client.os.OS;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import okhttp3.HttpUrl;
 
 @Data public class Client {
 	private Gui gui;
@@ -650,15 +651,18 @@ import lombok.Data;
 			}
 			
 			writer.close();
-			String args = "?type=" + (error == null ? "" : error.getValue());
+			HttpUrl.Builder remoteURL = HttpUrl.parse(this.server.getPage("error")).newBuilder();
+			remoteURL.addQueryParameter("type", error == null ? "" : Integer.toString(error.getValue()));
 			if (job_to_reset_ != null) {
-				args += "&frame=" + job_to_reset_.getFrameNumber() + "&job=" + job_to_reset_.getId() + "&render_time=" + job_to_reset_.getProcessRender()
-						.getDuration() + "&memoryused=" + job_to_reset_.getProcessRender().getMemoryUsed();
+				remoteURL.addQueryParameter("frame", job_to_reset_.getFrameNumber());
+				remoteURL.addQueryParameter("job", job_to_reset_.getId());
+				remoteURL.addQueryParameter("render_time", Integer.toString(job_to_reset_.getProcessRender().getDuration()));
+				remoteURL.addQueryParameter("memoryused", Long.toString(job_to_reset_.getProcessRender().getMemoryUsed()));
 				if (job_to_reset_.getExtras() != null && job_to_reset_.getExtras().isEmpty() == false) {
-					args += "&extras=" + job_to_reset_.getExtras();
+					remoteURL.addQueryParameter("extras", job_to_reset_.getExtras());
 				}
 			}
-			this.server.HTTPSendFile(this.server.getPage("error") + args, temp_file.getAbsolutePath(), step_, this.gui);
+			this.server.HTTPSendFile(remoteURL.build().toString(), temp_file.getAbsolutePath(), step_, this.gui);
 			temp_file.delete();
 		}
 		catch (Exception e) {
