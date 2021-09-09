@@ -360,11 +360,11 @@ import lombok.Data;
 					}
 					
 					if (this.renderingJob == null) { // no job
-						int[] retrySchemeInSeconds = { 300000, 480000, 720000, 900000, 1200000 };    // 5, 8, 12, 15 and 20 minutes
+						int[] retrySchemeInMilliSeconds = { 300000, 480000, 720000, 900000, 1200000 };    // 5, 8, 12, 15 and 20 minutes
 						
-						int time_sleep = retrySchemeInSeconds[(this.noJobRetryIter < retrySchemeInSeconds.length) ?
+						int time_sleep = retrySchemeInMilliSeconds[(this.noJobRetryIter < retrySchemeInMilliSeconds.length) ?
 								this.noJobRetryIter++ :
-								(retrySchemeInSeconds.length - 1)];
+								(retrySchemeInMilliSeconds.length - 1)];
 						this.gui.status(String.format("No job available. Will try again at %tR", new Date(new Date().getTime() + time_sleep)));
 						int time_slept = 0;
 						while (time_slept < time_sleep && this.running == true && !this.shuttingdown) {
