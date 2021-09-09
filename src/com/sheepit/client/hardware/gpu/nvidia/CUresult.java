@@ -79,6 +79,7 @@ public class CUresult {
 	 * profiling via ::cuProfilerStart or ::cuProfilerStop without
 	 * initialization.
 	 */
+	@Deprecated
 	public static final int CUDA_ERROR_PROFILER_NOT_INITIALIZED = 6;
 	
 	/**
@@ -89,6 +90,7 @@ public class CUresult {
 	 * It is no longer an error to call cuProfilerStart() when
 	 * profiling is already enabled.
 	 */
+	@Deprecated
 	public static final int CUDA_ERROR_PROFILER_ALREADY_STARTED = 7;
 	
 	/**
@@ -99,6 +101,7 @@ public class CUresult {
 	 * It is no longer an error to call cuProfilerStop() when
 	 * profiling is already disabled.
 	 */
+	@Deprecated
 	public static final int CUDA_ERROR_PROFILER_ALREADY_STOPPED = 8;
 	
 	/**
@@ -320,6 +323,7 @@ public class CUresult {
 	 * @deprecated This value has been added in CUDA 4.0 RC,
 	 * and removed in CUDA 4.0 RC2
 	 */
+	@Deprecated
 	public static final int CUDA_ERROR_PEER_MEMORY_ALREADY_REGISTERED = 706;
 	
 	/**
@@ -329,6 +333,7 @@ public class CUresult {
 	 * @deprecated This value has been added in CUDA 4.0 RC,
 	 * and removed in CUDA 4.0 RC2
 	 */
+	@Deprecated
 	public static final int CUDA_ERROR_PEER_MEMORY_NOT_REGISTERED = 707;
 	
 	/**
