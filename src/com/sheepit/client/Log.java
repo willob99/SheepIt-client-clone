@@ -78,7 +78,7 @@ public class Log {
 				if (this.checkpoints.containsKey(checkpointToWrite) && this.checkpoints.get(checkpointToWrite) != null) {
 					this.checkpoints.get(checkpointToWrite).add(line);
 				}
-				if (this.printStdOut == true) {
+				if (this.printStdOut) {
 					System.out.println(line);
 				}
 			}

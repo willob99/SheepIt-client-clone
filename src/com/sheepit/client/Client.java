@@ -172,7 +172,7 @@ import okhttp3.HttpUrl;
 			thread_sender.start();
 			
 			do {
-				while (this.running == true) {
+				while (this.running) {
 					this.renderingJob = null;
 
 					synchronized (this) {
@@ -368,7 +368,7 @@ import okhttp3.HttpUrl;
 								(retrySchemeInMilliSeconds.length - 1)];
 						this.gui.status(String.format("No job available. Will try again at %tR", new Date(new Date().getTime() + time_sleep)));
 						int time_slept = 0;
-						while (time_slept < time_sleep && this.running == true && !this.shuttingdown) {
+						while (time_slept < time_sleep && this.running && !this.shuttingdown) {
 							try {
 								Thread.sleep(250);
 							}
@@ -415,13 +415,13 @@ import okhttp3.HttpUrl;
 								catch (InterruptedException e1) {
 								}
 							}
-							break;	// if the shutdown signal is triggered then exit the while (this.running == true) loop to initiate the shutdown process
+							break;	// if the shutdown signal is triggered then exit the while (this.running) loop to initiate the shutdown process
 						}
 						
 						continue;
 					}
 					
-					if (this.renderingJob.isSynchronousUpload() == true) { // power or compute_method job, need to upload right away
+					if (this.renderingJob.isSynchronousUpload()) { // power or compute_method job, need to upload right away
 						this.gui.status(String.format("Uploading frame (%.2fMB)", (this.renderingJob.getOutputImageSize() / 1024.0 / 1024.0)));
 						
 						ret = confirmJob(this.renderingJob, step);
@@ -442,10 +442,10 @@ import okhttp3.HttpUrl;
 						this.renderingJob = null;
 					}
 					
-					if (this.shouldWaitBeforeRender() == true) {
+					if (this.shouldWaitBeforeRender()) {
 						this.gui.status("Sending frames. Please wait");
 						
-						while (this.shouldWaitBeforeRender() == true) {
+						while (this.shouldWaitBeforeRender()) {
 							try {
 								Thread.sleep(4000); // wait a little bit
 							}
@@ -823,7 +823,7 @@ import okhttp3.HttpUrl;
 			// For a maximum of 30 minutes
 			do {
 				// if the binary or scene already exists in the cache
-				if (local_path_file.exists() == true) {
+				if (local_path_file.exists()) {
 					this.gui.status("Reusing cached " + download_type);
 					return Type.OK;
 				}
