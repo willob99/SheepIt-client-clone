@@ -325,7 +325,7 @@ import lombok.Data;
 	}
 	
 	public boolean checkOSisSupported() {
-		return OS.getOS() != null;
+		return OS.getOS() != null && OS.getOS().isSupported();
 	}
 	
 	public boolean checkCPUisSupported() {

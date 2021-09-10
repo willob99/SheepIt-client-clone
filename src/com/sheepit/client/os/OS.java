@@ -22,25 +22,39 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
+import oshi.software.os.OperatingSystem;
+import oshi.hardware.HardwareAbstractionLayer;
 import com.sheepit.client.hardware.cpu.CPU;
 
 public abstract class OS {
+	private static SystemInfo systemInfo = new SystemInfo();
+	
+	static OperatingSystem operatingSystem = systemInfo.getOperatingSystem();
+	
+	private static HardwareAbstractionLayer hardwareAbstractionLayer = systemInfo.getHardware();
+	
 	private static OS instance = null;
 	
 	public abstract String name();
+	
+	public boolean isSupported() { return true; }
 	
 	/** Get the full version of the os.
 	 * For example windows, should give "windows 8.1"
 	 */
 	public String getVersion() {
-		return System.getProperty("os.name").toLowerCase();
+		return (name() + " " + operatingSystem.getVersionInfo()).toLowerCase();
 	}
 	
-	public abstract CPU getCPU();
+	public long getMemory() {
+		return hardwareAbstractionLayer.getMemory().getTotal() / 1024;
+	}
 	
-	public abstract long getMemory();
-	
-	public abstract long getFreeMemory();
+	public long getFreeMemory() {
+		return hardwareAbstractionLayer.getMemory().getAvailable() / 1024;
+	}
 	
 	public abstract String getRenderBinaryPath();
 	
@@ -53,6 +67,15 @@ public abstract class OS {
 	public abstract boolean checkNiceAvailability();
 	
 	public abstract void shutdownComputer(int delayInMinutes);
+	
+	public CPU getCPU() {
+		CentralProcessor.ProcessorIdentifier cpuID = hardwareAbstractionLayer.getProcessor().getProcessorIdentifier();
+		CPU ret = new CPU();
+		ret.setName(cpuID.getName());
+		ret.setModel(cpuID.getModel());
+		ret.setFamily(cpuID.getFamily());
+		return ret;
+	}
 	
 	public Process exec(List<String> command, Map<String, String> env) throws IOException {
 		ProcessBuilder builder = new ProcessBuilder(command);
@@ -73,21 +96,18 @@ public abstract class OS {
 	
 	public static OS getOS() {
 		if (instance == null) {
-			String os = System.getProperty("os.name").toLowerCase();
-			if (os.contains("win")) {
-				instance = new Windows();
-			}
-			else if (os.contains("mac")) {
-				instance = new Mac();
-			}
-			else if (os.contains("nix") || os.contains("nux")) {
-				instance = new Linux();
-			}
-			else if (os.contains("freebsd")) {
-				instance = new FreeBSD();
+			switch (operatingSystem.getManufacturer()){
+				case "Microsoft":
+					instance = new Windows();
+					break;
+				case "Apple":
+					instance = new Mac();
+					break;
+				case "GNU/Linux":
+					instance = new Linux();
+					break;
 			}
 		}
-		
 		return instance;
 	}
 }

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.sheepit.client.Log;
-import com.sheepit.client.hardware.cpu.CPU;
 
 public class Mac extends OS {
 	private final String NICE_BINARY_PATH = "nice";
@@ -37,108 +36,12 @@ public class Mac extends OS {
 		super();
 	}
 	
-	public String name() {
+	@Override public String name() {
 		return "mac";
 	}
 	
 	@Override public String getRenderBinaryPath() {
 		return "Blender" + File.separator + "blender.app" + File.separator + "Contents" + File.separator + "MacOS" + File.separator + "blender";
-	}
-	
-	@Override public CPU getCPU() {
-		CPU ret = new CPU();
-		
-		String command = "sysctl machdep.cpu.family machdep.cpu.brand_string";
-		
-		Process p = null;
-		BufferedReader input = null;
-		try {
-			String line;
-			p = Runtime.getRuntime().exec(command);
-			input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			
-			while ((line = input.readLine()) != null) {
-				String option_cpu_family = "machdep.cpu.family:";
-				String option_model_name = "machdep.cpu.brand_string:";
-				if (line.startsWith(option_model_name)) {
-					ret.setName(line.substring(option_model_name.length()).trim());
-				}
-				if (line.startsWith(option_cpu_family)) {
-					ret.setFamily(line.substring(option_cpu_family.length()).trim());
-				}
-			}
-			input.close();
-			input = null;
-		}
-		catch (Exception err) {
-			System.out.println("exception " + err);
-			err.printStackTrace();
-			ret.setName("Unknown Mac name");
-			ret.setFamily("Unknown Mac family");
-		}
-		finally {
-			if (input != null) {
-				try {
-					input.close();
-				}
-				catch (IOException e) {
-				}
-			}
-			
-			if (p != null) {
-				p.destroy();
-			}
-		}
-		
-		ret.setModel("Unknown");
-		
-		return ret;
-	}
-	
-	@Override public long getMemory() {
-		String command = "sysctl hw.memsize";
-		
-		Process p = null;
-		BufferedReader input = null;
-		try {
-			String line;
-			p = Runtime.getRuntime().exec(command);
-			input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			
-			while ((line = input.readLine()) != null) {
-				String option = "hw.memsize:";
-				if (line.startsWith(option)) {
-					String memory = line.substring(option.length()).trim(); // memory in bytes
-					
-					return Long.parseLong(memory) / 1024;
-				}
-			}
-			input.close();
-			input = null;
-		}
-		catch (Exception err) {
-			System.out.println("exception " + err);
-			err.printStackTrace();
-		}
-		finally {
-			if (input != null) {
-				try {
-					input.close();
-				}
-				catch (IOException e) {
-				}
-			}
-			
-			if (p != null) {
-				p.destroy();
-			}
-		}
-		
-		return -1;
-	}
-	
-	@Override public long getFreeMemory() {
-		return -1;
 	}
 	
 	@Override public Process exec(List<String> command, Map<String, String> env) throws IOException {
@@ -163,6 +66,12 @@ public class Mac extends OS {
 			builder.environment().putAll(env);
 		}
 		return builder.start();
+	}
+	
+	@Override public boolean isSupported() {
+		String[] ver = operatingSystem.getVersionInfo().getVersion().split("\\.");
+		int majorVer = Integer.parseInt(ver[0]), minorVer = Integer.parseInt(ver[1]);
+		return (majorVer == 10 && minorVer >= 13) || majorVer >= 11;
 	}
 	
 	@Override public String getCUDALib() {

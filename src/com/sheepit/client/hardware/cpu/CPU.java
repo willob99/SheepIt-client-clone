@@ -80,6 +80,7 @@ public class CPU {
 				break;
 			case "amd64":
 			case "x86_64":
+			case "x64":
 				this.arch = "64bit";
 				break;
 			default:

@@ -22,95 +22,18 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import com.sheepit.client.hardware.cpu.CPU;
 import com.sheepit.client.os.windows.Kernel32Lib;
 import com.sheepit.client.os.windows.WinProcess;
 import com.sun.jna.Native;
-import com.sun.jna.platform.win32.Advapi32Util;
-import com.sun.jna.platform.win32.Kernel32;
-import com.sun.jna.platform.win32.WinBase.MEMORYSTATUSEX;
-import com.sun.jna.platform.win32.WinReg;
 
 public class Windows extends OS {
 	
-	public String name() {
+	@Override public String name() {
 		return "windows";
 	}
 	
 	@Override public String getRenderBinaryPath() {
 		return "rend.exe";
-	}
-	
-	@Override public CPU getCPU() {
-		CPU ret = new CPU();
-		try {
-			String[] identifier = java.lang.System.getenv("PROCESSOR_IDENTIFIER").split(" ");
-			for (int i = 0; i < (identifier.length - 1); i++) {
-				if (identifier[i].equals("Family")) {
-					ret.setFamily(identifier[i + 1]);
-				}
-				if (identifier[i].equals("Model")) {
-					ret.setModel(identifier[i + 1]);
-				}
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			final String cpuRegistryRoot = "HARDWARE\\DESCRIPTION\\System\\CentralProcessor";
-			String[] processorIds = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, cpuRegistryRoot);
-			if (processorIds.length > 0) {
-				String processorId = processorIds[0];
-				String cpuRegistryPath = cpuRegistryRoot + "\\" + processorId;
-				ret.setName(Advapi32Util.registryGetStringValue(WinReg.HKEY_LOCAL_MACHINE, cpuRegistryPath, "ProcessorNameString").trim());
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		// override the arch
-		String env_arch = java.lang.System.getenv("PROCESSOR_ARCHITEW6432");
-		if (env_arch == null || env_arch.compareTo("") == 0) {
-			env_arch = java.lang.System.getenv("PROCESSOR_ARCHITECTURE");
-		}
-		if (env_arch.compareTo("AMD64") == 0) {
-			ret.setArch("64bit");
-		}
-		else {
-			ret.setArch("32bit");
-		}
-		
-		return ret;
-	}
-	
-	@Override public long getMemory() {
-		try {
-			MEMORYSTATUSEX _memory = new MEMORYSTATUSEX();
-			if (Kernel32.INSTANCE.GlobalMemoryStatusEx(_memory)) {
-				return _memory.ullTotalPhys.longValue() / 1024; // size in KB
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		return 0;
-	}
-	
-	@Override public long getFreeMemory() {
-		try {
-			MEMORYSTATUSEX _memory = new MEMORYSTATUSEX();
-			if (Kernel32.INSTANCE.GlobalMemoryStatusEx(_memory)) {
-				return _memory.ullAvailPhys.longValue() / 1024; // size in KB
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return -1;
 	}
 	
 	@Override public String getCUDALib() {
@@ -149,6 +72,11 @@ public class Windows extends OS {
 			wproc.setPriority(WinProcess.PRIORITY_BELOW_NORMAL);
 		}
 		return p;
+	}
+	
+	@Override public boolean isSupported() {
+		String ver = operatingSystem.getVersionInfo().getVersion();
+		return ver.equals("8.1") || ver.equals("10") || ver.equals("11");
 	}
 	
 	int getPriorityClass(int priority) {

@@ -26,10 +26,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import com.sheepit.client.Log;
-import com.sheepit.client.hardware.cpu.CPU;
 
 public class Linux extends OS {
 	private final String NICE_BINARY_PATH = "nice";
@@ -39,109 +37,12 @@ public class Linux extends OS {
 		super();
 	}
 	
-	public String name() {
+	@Override public String name() {
 		return "linux";
 	}
 	
 	@Override public String getRenderBinaryPath() {
 		return "rend.exe";
-	}
-	
-	@Override public CPU getCPU() {
-		CPU ret = new CPU();
-		try {
-			String filePath = "/proc/cpuinfo";
-			Scanner scanner = new Scanner(new File(filePath));
-			
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				if (line.startsWith("model name")) {
-					String buf[] = line.split(":");
-					if (buf.length > 1) {
-						ret.setName(buf[1].trim());
-					}
-				}
-				
-				if (line.startsWith("cpu family")) {
-					String buf[] = line.split(":");
-					if (buf.length > 1) {
-						ret.setFamily(buf[1].trim());
-					}
-				}
-				
-				if (line.startsWith("model") && line.startsWith("model name") == false) {
-					String buf[] = line.split(":");
-					if (buf.length > 1) {
-						ret.setModel(buf[1].trim());
-					}
-				}
-			}
-			scanner.close();
-		}
-		catch (java.lang.NoClassDefFoundError e) {
-			System.err.println("OS.Linux::getCPU error " + e + " mostly because Scanner class was introduced by Java 5 and you are running a lower version");
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		return ret;
-	}
-	
-	@Override public long getMemory() {
-		try {
-			String filePath = "/proc/meminfo";
-			Scanner scanner = new Scanner(new File(filePath));
-			
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				
-				if (line.startsWith("MemTotal")) {
-					String buf[] = line.split(":");
-					if (buf.length > 0) {
-						Integer buf2 = new Integer(buf[1].trim().split(" ")[0]);
-						return (((buf2 / 262144) + 1) * 262144); // 256*1024 = 262144
-					}
-				}
-			}
-			scanner.close();
-		}
-		catch (java.lang.NoClassDefFoundError e) {
-			System.err.println("Machine::type error " + e + " mostly because Scanner class was introducted by Java 5 and you are running a lower version");
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return 0;
-	}
-	
-	@Override public long getFreeMemory() {
-		try {
-			String filePath = "/proc/meminfo";
-			Scanner scanner = new Scanner(new File(filePath));
-			
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				
-				if (line.startsWith("MemAvailable")) {
-					String buf[] = line.split(":");
-					if (buf.length > 0) {
-						Integer buf2 = new Integer(buf[1].trim().split(" ")[0]);
-						return (((buf2 / 262144) + 1) * 262144); // 256*1024 = 262144
-					}
-				}
-			}
-			scanner.close();
-		}
-		catch (java.lang.NoClassDefFoundError e) {
-			System.err.println(
-					"OS::Linux::getFreeMemory error " + e + " mostly because Scanner class was introducted by Java 5 and you are running a lower version");
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return 0;
 	}
 	
 	@Override public String getCUDALib() {
