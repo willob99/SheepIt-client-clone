@@ -158,7 +158,7 @@ public class Windows extends OS {
 	
 	@Override public void shutdownComputer(int delayInMinutes) {
 		try {
-			// Shutdown the computer, waiting 60 seconds, force app closure and on the shutdown screen indicate that was initiated by SheepIt app
+			// Shutdown the computer, waiting delayInMinutes minutes, force app closure and on the shutdown screen indicate that was initiated by SheepIt app
 			ProcessBuilder builder = new ProcessBuilder("shutdown", "/s", "/f", "/t", String.valueOf(delayInMinutes * 60), "/c", "\"SheepIt App has initiated this computer shutdown.\"");
 			Process process = builder.inheritIO().start();
 		}

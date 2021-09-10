@@ -66,6 +66,9 @@ public abstract class OS {
 	
 	public abstract boolean checkNiceAvailability();
 	
+	/**
+	 * Shutdown the computer waiting delayInMinutes minutes to allow all SheepIt threads to close and exit the app
+	 */
 	public abstract void shutdownComputer(int delayInMinutes);
 	
 	public CPU getCPU() {

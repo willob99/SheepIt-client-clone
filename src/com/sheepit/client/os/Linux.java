@@ -183,7 +183,7 @@ public class Linux extends OS {
 	
 	@Override public void shutdownComputer(int delayInMinutes) {
 		try {
-			// Shutdown the computer waiting 1 minute to allow all SheepIt threads to close and exit the app
+			// Shutdown the computer waiting delayInMinutes minutes to allow all SheepIt threads to close and exit the app
 			ProcessBuilder builder = new ProcessBuilder("shutdown", "-h", String.valueOf(delayInMinutes));
 			Process process = builder.inheritIO().start();
 		}
