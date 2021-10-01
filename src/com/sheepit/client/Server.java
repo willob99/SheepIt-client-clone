@@ -462,7 +462,7 @@ public class Server extends Thread {
 			return Error.Type.OK;
 		}
 		catch (Exception e) {
-			if (Utils.noFreeSpaceOnDisk(new File(destination_).getParent())) {
+			if (Utils.noFreeSpaceOnDisk(new File(destination_).getParent(), log)) {
 				throw new FermeExceptionNoSpaceLeftOnDevice();
 			}
 			

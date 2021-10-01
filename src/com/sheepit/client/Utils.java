@@ -201,14 +201,17 @@ public class Utils {
 		return output;
 	}
 	
-	public static boolean noFreeSpaceOnDisk(String destination_) {
+	public static boolean noFreeSpaceOnDisk(String destination_, Log log) {
 		try {
 			File file = new File(destination_);
 			for (int i = 0; i < 3; i++) { //We poll repeatedly because getUsableSpace() might just return 0 on busy disk IO
-				if (file.getUsableSpace() > 512 * 1024) { // at least the same amount as Server.HTTPGetFile
+				long space = file.getUsableSpace();
+				if (space > 512 * 1024) { // at least the same amount as Server.HTTPGetFile
 					return false; // If we are not "full", we are done, no need for additional polling
 				} else if (i < 2) {
-					Thread.sleep((long) (Math.random() * (100 - 40 + 1) + 40)); //Wait between 40 and 100 milliseconds
+					long time = (long) (Math.random() * (100 - 40 + 1) + 40); //Wait between 40 and 100 milliseconds
+					log.debug("Utils::Not enough free disk space(" + space + ") encountered on try " + i + ", waiting " + time + "ms");
+					Thread.sleep(time);
 				}
 			}
 			return true;
