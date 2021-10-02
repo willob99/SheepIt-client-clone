@@ -216,7 +216,7 @@ import okhttp3.HttpUrl;
 					catch (FermeExceptionSessionDisabled e) {
 						this.gui.error(Error.humanString(Error.Type.SESSION_DISABLED));
 						// should wait forever to actually display the message to the user
-						while (true && !shuttingdown) {
+						while (shuttingdown == false) {
 							try {
 								Thread.sleep(1000);
 							}
@@ -227,7 +227,7 @@ import okhttp3.HttpUrl;
 					catch (FermeExceptionNoRendererAvailable e) {
 						this.gui.error(Error.humanString(Error.Type.RENDERER_NOT_AVAILABLE));
 						// should wait forever to actually display the message to the user
-						while (true && !shuttingdown) {
+						while (shuttingdown == false) {
 							try {
 								Thread.sleep(1000);
 							}
@@ -368,7 +368,7 @@ import okhttp3.HttpUrl;
 								(retrySchemeInMilliSeconds.length - 1)];
 						this.gui.status(String.format("No job available. Will try again at %tR", new Date(new Date().getTime() + time_sleep)));
 						int time_slept = 0;
-						while (time_slept < time_sleep && this.running && !this.shuttingdown) {
+						while (time_slept < time_sleep && this.running && this.shuttingdown == false) {
 							try {
 								Thread.sleep(250);
 							}
@@ -408,7 +408,7 @@ import okhttp3.HttpUrl;
 						if (Integer.parseInt(currentJob.getId()) < 20) {
 							// Add the proper explanation to the existing error message and keep the client waiting forever to ensure the user sees the error
 							this.gui.error(Error.humanString(ret) + " The error happened during the test frame render. Restart the client and try again.");
-							while (true && !shuttingdown) {
+							while (shuttingdown == false) {
 								try {
 									Thread.sleep(1000);
 								}
