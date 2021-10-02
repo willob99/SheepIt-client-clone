@@ -34,6 +34,7 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,62 +56,62 @@ import com.sheepit.client.network.Proxy;
 import com.sheepit.client.os.OS;
 
 public class Worker {
-	@Option(name = "-server", usage = "Render-farm server, default https://client.sheepit-renderfarm.com", metaVar = "URL", required = false) private String server = "https://client.sheepit-renderfarm.com";
+	@Option(name = SettingsLoader.ARG_SERVER, usage = "Render-farm server, default https://client.sheepit-renderfarm.com", metaVar = "URL", required = false) private String server = "https://client.sheepit-renderfarm.com";
 	
-	@Option(name = "-login", usage = "User's login", metaVar = "LOGIN", required = false) private String login = "";
+	@Option(name = SettingsLoader.ARG_LOGIN, usage = "User's login", metaVar = "LOGIN", required = false) private String login = "";
 	
-	@Option(name = "-password", usage = "User's password or public key (accessible under the Keys tab of the profile page)", metaVar = "PASSWORD", required = false) private String password = "";
+	@Option(name = SettingsLoader.ARG_PASSWORD, usage = "User's password or public key (accessible under the Keys tab of the profile page)", metaVar = "PASSWORD", required = false) private String password = "";
 	
-	@Option(name = "-cache-dir", usage = "Cache/Working directory. Caution, everything in it not related to the render-farm will be removed", metaVar = "/tmp/cache", required = false) private String cache_dir = null;
+	@Option(name = SettingsLoader.ARG_CACHE_DIR, usage = "Cache/Working directory. Caution, everything in it not related to the render-farm will be removed", metaVar = "/tmp/cache", required = false) private String cache_dir = null;
 	
-	@Option(name = "-shared-zip", usage = "Shared directory for downloaded binaries and scenes. Useful when running two or more clients in the same computer/network to download once and render many times. IMPORTANT: This option and value must be identical in ALL clients sharing the directory.", required = false) private String sharedDownloadsDir = null;
+	@Option(name = SettingsLoader.ARG_SHARED_ZIP, usage = "Shared directory for downloaded binaries and scenes. Useful when running two or more clients in the same computer/network to download once and render many times. IMPORTANT: This option and value must be identical in ALL clients sharing the directory.", required = false) private String sharedDownloadsDir = null;
 	
-	@Option(name = "-gpu", usage = "Name of the GPU used for the render, for example CUDA_0 for Nvidia or OPENCL_0 for AMD/Intel card", metaVar = "CUDA_0", required = false) private String gpu_device = null;
+	@Option(name = SettingsLoader.ARG_GPU, usage = "Name of the GPU used for the render, for example CUDA_0 for Nvidia or OPENCL_0 for AMD/Intel card", metaVar = "CUDA_0", required = false) private String gpu_device = null;
 	
-	@Option(name = "--no-gpu", usage = "Don't detect GPUs", required = false) private boolean no_gpu_detection = false;
+	@Option(name = SettingsLoader.ARG_NO_GPU, usage = "Don't detect GPUs", required = false) private boolean no_gpu_detection = false;
 	
-	@Option(name = "-compute-method", usage = "CPU: only use cpu, GPU: only use gpu, CPU_GPU: can use cpu and gpu (not at the same time) if -gpu is not use it will not use the gpu", metaVar = "CPU", required = false) private String method = null;
+	@Option(name = SettingsLoader.ARG_COMPUTE_METHOD, usage = "CPU: only use cpu, GPU: only use gpu, CPU_GPU: can use cpu and gpu (not at the same time) if -gpu is not use it will not use the gpu", metaVar = "CPU", required = false) private String method = null;
 	
-	@Option(name = "-cores", usage = "Number of cores/threads to use for the render. The minimum is two cores unless your system only has one", metaVar = "3", required = false) private int nb_cores = -1;
+	@Option(name = SettingsLoader.ARG_CORES, usage = "Number of cores/threads to use for the render. The minimum is two cores unless your system only has one", metaVar = "3", required = false) private int nb_cores = -1;
 	
-	@Option(name = "-memory", usage = "Maximum memory allow to be used by renderer, number with unit (800M, 2G, ...)", required = false) private String max_ram = null;
+	@Option(name = SettingsLoader.ARG_MEMORY, usage = "Maximum memory allow to be used by renderer, number with unit (800M, 2G, ...)", required = false) private String max_ram = null;
 	
-	@Option(name = "-rendertime", usage = "Maximum time allow for each frame (in minutes)", required = false) private int max_rendertime = -1;
+	@Option(name = SettingsLoader.ARG_RENDERTIME, usage = "Maximum time allow for each frame (in minutes)", required = false) private int max_rendertime = -1;
 	
-	@Option(name = "--verbose", usage = "Display log", required = false) private boolean print_log = false;
+	@Option(name = SettingsLoader.ARG_VERBOSE, usage = "Display log", required = false) private boolean print_log = false;
 	
-	@Option(name = "-request-time", usage = "H1:M1-H2:M2,H3:M3-H4:M4 Use the 24h format. For example to request job between 2am-8.30am and 5pm-11pm you should do --request-time 2:00-8:30,17:00-23:00 Caution, it's the requesting job time to get a project, not the working time", metaVar = "2:00-8:30,17:00-23:00", required = false) private String request_time = null;
+	@Option(name = SettingsLoader.ARG_REQUEST_TIME, usage = "H1:M1-H2:M2,H3:M3-H4:M4 Use the 24h format. For example to request job between 2am-8.30am and 5pm-11pm you should do --request-time 2:00-8:30,17:00-23:00 Caution, it's the requesting job time to get a project, not the working time", metaVar = "2:00-8:30,17:00-23:00", required = false) private String request_time = null;
 	
-	@Option(name = "-shutdown", usage = "Specify when the client will close and the host computer will shut down in a proper way. The time argument can have two different formats: an absolute date and time in the format yyyy-mm-ddThh:mm:ss (24h format) or a relative time in the format +m where m is the number of minutes from now.", metaVar = "DATETIME or +N", required = false) private String shutdown = null;
+	@Option(name = SettingsLoader.ARG_SHUTDOWN, usage = "Specify when the client will close and the host computer will shut down in a proper way. The time argument can have two different formats: an absolute date and time in the format yyyy-mm-ddThh:mm:ss (24h format) or a relative time in the format +m where m is the number of minutes from now.", metaVar = "DATETIME or +N", required = false) private String shutdown = null;
 	
-	@Option(name = "-shutdown-mode", usage = "Indicates if the shutdown process waits for the upload queue to finish (wait) or interrupt all the pending tasks immediately (hard). The default shutdown mode is wait.", metaVar = "MODE", required = false) private String shutdownMode = null;
+	@Option(name = SettingsLoader.ARG_SHUTDOWN_MODE, usage = "Indicates if the shutdown process waits for the upload queue to finish (wait) or interrupt all the pending tasks immediately (hard). The default shutdown mode is wait.", metaVar = "MODE", required = false) private String shutdownMode = null;
 	
-	@Option(name = "-proxy", usage = "URL of the proxy", metaVar = "http://login:password@host:port", required = false) private String proxy = null;
+	@Option(name = SettingsLoader.ARG_PROXY, usage = "URL of the proxy", metaVar = "http://login:password@host:port", required = false) private String proxy = null;
 	
-	@Option(name = "-extras", usage = "Extras data push on the authentication request", required = false) private String extras = null;
+	@Option(name = SettingsLoader.ARG_EXTRAS, usage = "Extras data push on the authentication request", required = false) private String extras = null;
 	
-	@Option(name = "-ui", usage = "Specify the user interface to use, default '" + GuiSwing.type + "', available '" + GuiTextOneLine.type + "', '"
+	@Option(name = SettingsLoader.ARG_UI, usage = "Specify the user interface to use, default '" + GuiSwing.type + "', available '" + GuiTextOneLine.type + "', '"
 			+ GuiText.type + "', '" + GuiSwing.type + "' (graphical)", required = false) private String ui_type = null;
 	
-	@Option(name = "-config", usage = "Specify the configuration file", required = false) private String config_file = null;
+	@Option(name = SettingsLoader.ARG_CONFIG, usage = "Specify the configuration file", required = false) private String config_file = null;
 	
-	@Option(name = "--version", usage = "Display application version", required = false, handler = VersionParameterHandler.class) private VersionParameterHandler versionHandler;
+	@Option(name = SettingsLoader.ARG_VERSION, usage = "Display application version", required = false, handler = VersionParameterHandler.class) private VersionParameterHandler versionHandler;
 	
-	@Option(name = "--show-gpu", usage = "Print available GPU devices and exit", required = false, handler = ListGpuParameterHandler.class) private ListGpuParameterHandler listGpuParameterHandler;
+	@Option(name = SettingsLoader.ARG_SHOW_GPU, usage = "Print available GPU devices and exit", required = false, handler = ListGpuParameterHandler.class) private ListGpuParameterHandler listGpuParameterHandler;
 	
-	@Option(name = "--no-systray", usage = "Don't use SysTray", required = false) private boolean useSysTray = false;
+	@Option(name = SettingsLoader.ARG_NO_SYSTRAY, usage = "Don't use SysTray", required = false) private boolean useSysTray = false;
 	
-	@Option(name = "-priority", usage = "Set render process priority (19 lowest to -19 highest)", required = false) private int priority = 19;
+	@Option(name = SettingsLoader.ARG_PRIORITY, usage = "Set render process priority (19 lowest to -19 highest)", required = false) private int priority = 19;
 	
-	@Option(name = "-title", usage = "Custom title for the GUI Client", required = false) private String title = "SheepIt Render Farm";
+	@Option(name = SettingsLoader.ARG_TITLE, usage = "Custom title for the GUI Client", required = false) private String title = "SheepIt Render Farm";
 	
-	@Option(name = "-theme", usage = "Specify the theme to use for the graphical client, default 'light', available 'light', 'dark'", required = false) private String theme = null;
+	@Option(name = SettingsLoader.ARG_THEME, usage = "Specify the theme to use for the graphical client, default 'light', available 'light', 'dark'", required = false) private String theme = null;
 	
-	@Option(name = "-renderbucket-size", usage = "Set a custom GPU renderbucket size (32 for 32x32px, 64 for 64x64px, and so on). NVIDIA GPUs support a maximum renderbucket size of 512x512 pixel, while AMD GPUs support a maximum 2048x2048 pixel renderbucket size. Minimum renderbucket size is 32 pixels for all GPUs", required = false) private int renderbucketSize = -1;
+	@Option(name = SettingsLoader.ARG_RENDERBUCKET_SIZE, usage = "Set a custom GPU renderbucket size (32 for 32x32px, 64 for 64x64px, and so on). NVIDIA GPUs support a maximum renderbucket size of 512x512 pixel, while AMD GPUs support a maximum 2048x2048 pixel renderbucket size. Minimum renderbucket size is 32 pixels for all GPUs", required = false) private int renderbucketSize = -1;
 	
-	@Option(name = "-hostname", usage = "Set a custom hostname name (name change will be lost when client is closed)", required = false) private String hostname = null;
+	@Option(name = SettingsLoader.ARG_HOSTNAME, usage = "Set a custom hostname name (name change will be lost when client is closed)", required = false) private String hostname = null;
 	
-	@Option(name = "--headless", usage = "Mark your client manually as headless to block Eevee projects", required = false) private boolean headless = java.awt.GraphicsEnvironment.isHeadless();
+	@Option(name = SettingsLoader.ARG_HEADLESS, usage = "Mark your client manually as headless to block Eevee projects", required = false) private boolean headless = java.awt.GraphicsEnvironment.isHeadless();
 	
 	public static void main(String[] args) {
 		if (OS.getOS() == null) {
@@ -432,7 +433,12 @@ public class Worker {
 		}
 		
 		SettingsLoader settingsLoader = new SettingsLoader(config_file);
-		settingsLoader.merge(config);
+		settingsLoader.merge(config, true);
+		
+		if (args.length > 0) {
+			settingsLoader.markLaunchSettings(List.of(args));
+		}
+		
 		Log.getInstance(config).debug("client version " + config.getJarVersion());
 		
 		// Hostname change will overwrite the existing one (default or read from configuration file) but changes will be lost when the client closes
@@ -480,7 +486,6 @@ public class Worker {
 		}
 		Client cli = new Client(gui, config, server);
 		gui.setClient(cli);
-		
 		ShutdownHook hook = new ShutdownHook(cli);
 		hook.attachShutDownHook();
 		

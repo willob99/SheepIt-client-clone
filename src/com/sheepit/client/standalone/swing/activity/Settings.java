@@ -63,7 +63,6 @@ import com.formdev.flatlaf.FlatDarkLaf;
 
 import com.sheepit.client.Configuration;
 import com.sheepit.client.Configuration.ComputeType;
-import com.sheepit.client.SettingsLoader;
 import com.sheepit.client.hardware.cpu.CPU;
 import com.sheepit.client.hardware.gpu.GPU;
 import com.sheepit.client.hardware.gpu.GPUDevice;
@@ -75,8 +74,8 @@ import com.sheepit.client.os.OS;
 import com.sheepit.client.standalone.GuiSwing;
 import com.sheepit.client.standalone.swing.SwingTooltips;
 import com.sheepit.client.standalone.swing.components.CollapsibleJPanel;
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+
 
 public class Settings implements Activity {
 	private static final String DUMMY_CACHE_DIR = "Auto detected";
@@ -115,8 +114,6 @@ public class Settings implements Activity {
 	private boolean sessionStarted;	//indicates whether the settings activity gets shown on launch or mid-session.
 									// it should only be false when the settings activity gets shown right after launch
 	
-	@Getter private Configuration launchConfig;	//the config we launched with, combined out of launch arguments and config file settings
-	
 	public Settings(GuiSwing parent_) {
 		parent = parent_;
 		cacheDir = null;
@@ -127,7 +124,7 @@ public class Settings implements Activity {
 	
 	@Override public void show() {
 		Configuration config = parent.getConfiguration();
-		new SettingsLoader(config.getConfigFilePath()).merge(config);
+		parent.getSettingsLoader().merge(config, false);
 		useSysTrayPrevState = config.isUseSysTray();
 		isHeadlessPrevState = config.isHeadless();
 		
@@ -600,11 +597,6 @@ public class Settings implements Activity {
 			haveAutoStarted = true;
 			new SaveAction().actionPerformed(null);
 		}
-		
-		//check so the launch config does not get overwritten if the user goes back to the settings activity mid-session
-		if(!sessionStarted) {
-			launchConfig = new Configuration(config);
-		}
 	}
 	
 	public void resizeWindow() {}
@@ -758,10 +750,6 @@ public class Settings implements Activity {
 				return;
 			}
 			
-			if(config.isAutoSignIn() && launchConfig == null) {
-				launchConfig = new Configuration(config);
-			}
-			
 			if (themeOptionsGroup.getSelection().getActionCommand() != null)
 				config.setTheme(themeOptionsGroup.getSelection().getActionCommand());
 			
@@ -792,7 +780,6 @@ public class Settings implements Activity {
 			int renderbucket_size = -1;
 			if (renderbucketSize != null) {
 				renderbucket_size = (int) Math.pow(2, (renderbucketSize.getValue() + 5));
-				System.out.println(config.getRenderbucketSize() + " calced: " + renderbucket_size);
 			}
 			config.setRenderbucketSize(renderbucket_size);
 			
@@ -862,16 +849,10 @@ public class Settings implements Activity {
 			
 			
 			if (saveFile.isSelected()) {
-				//save config file values to seperate config for later comparison (only necessary for GuiSwing as the other uis dont save any configs)
-				Configuration configFileConfiguration = new Configuration(null, "", "");
-				configFileConfiguration.setConfigFilePath(config.getConfigFilePath());
-				parent.getSettingsLoader().merge(configFileConfiguration);
-			
-				mergeChanges(launchConfig, config, configFileConfiguration);
-//				parent.setSettingsLoader(
-//						new SettingsLoader(config.getConfigFilePath(), login.getText(), new String(password.getPassword()), proxyText, hostnameText, method,
-//								selected_gpu, renderbucket_size, cpu_cores, max_ram, max_rendertime, cachePath, autoSignIn.isSelected(), useSysTray.isSelected(),
-//								headlessCheckbox.isSelected(), GuiSwing.type, themeOptionsGroup.getSelection().getActionCommand(), config.getPriority()));
+				parent.getSettingsLoader()
+					.setSettings(config.getConfigFilePath(), login.getText(), new String(password.getPassword()), proxyText, hostnameText, method,
+						selected_gpu, renderbucket_size, cpu_cores, max_ram, max_rendertime, getCachePath(config), autoSignIn.isSelected(), useSysTray.isSelected(),
+						headlessCheckbox.isSelected(), GuiSwing.type, themeOptionsGroup.getSelection().getActionCommand(), config.getPriority());
 				
 				// wait for successful authentication (to store the public key)
 				// or do we already have one?
@@ -915,87 +896,6 @@ public class Settings implements Activity {
 				method = ComputeType.CPU_GPU;
 			}
 			return method;
-		}
-		
-		private void mergeChanges(Configuration launchConfig, Configuration workingConfig, Configuration configFileConfiguration) {
-			
-			/* if the config value we are checking is different from the config file (e.g. because it got passed as a launch argument) we leave the settingsLoader as is
-			 as to not overwrite it with the launch argument. However, if it was changed after launch we do save it
-			 */
-			if (saveSetting(launchConfig.getLogin(), configFileConfiguration.getLogin(), workingConfig.getLogin())) {
-				parent.getSettingsLoader().setLogin(workingConfig.getLogin());
-			}
-			
-			if (saveSetting(launchConfig.getPassword(), configFileConfiguration.getPassword(), workingConfig.getPassword())) {
-				parent.getSettingsLoader().setPassword(workingConfig.getPassword());
-			}
-			
-			if (saveSetting(launchConfig.getHostname(), configFileConfiguration.getHostname(), workingConfig.getHostname())) {
-				parent.getSettingsLoader().setHostname(workingConfig.getHostname());
-			}
-			
-			if (saveSetting(launchConfig.getProxy(), configFileConfiguration.getProxy(), workingConfig.getProxy())) {
-				parent.getSettingsLoader().setProxy(workingConfig.getProxy());
-			}
-			
-			if (saveSetting(launchConfig.getNbCores(), configFileConfiguration.getNbCores(), workingConfig.getNbCores())) {
-				parent.getSettingsLoader().setCores(String.valueOf(workingConfig.getNbCores()));
-			}
-			
-			if (saveSetting(launchConfig.getMaxMemory(), configFileConfiguration.getMaxMemory(), workingConfig.getMaxMemory())) {
-				parent.getSettingsLoader().setRam(String.valueOf(workingConfig.getMaxMemory()));
-			}
-			
-			if (saveSetting(launchConfig.getMaxRenderTime(), configFileConfiguration.getMaxRenderTime(), workingConfig.getMaxRenderTime())) {
-				parent.getSettingsLoader().setRenderTime(String.valueOf(workingConfig.getMaxRenderTime()));
-			}
-			
-			if (saveSetting(launchConfig.getGPUDevice(), configFileConfiguration.getGPUDevice(), workingConfig.getGPUDevice())) {
-				parent.getSettingsLoader().setGpu(workingConfig.getGPUDevice().getId());	//TODO presumably works
-			}
-			
-			if (saveSetting(launchConfig.getRenderbucketSize(), configFileConfiguration.getRenderbucketSize(), workingConfig.getRenderbucketSize())) {
-				parent.getSettingsLoader().setRenderbucketSize(String.valueOf(workingConfig.getRenderbucketSize()));
-			}
-			
-			if (saveSetting(getCachePath(launchConfig), getCachePath(configFileConfiguration), getCachePath(workingConfig))) {
-				parent.getSettingsLoader().setCacheDir(getCachePath(workingConfig));
-			}
-			
-			//not changeable through launch arguments
-			if (saveSetting(launchConfig.isAutoSignIn(), configFileConfiguration.isAutoSignIn(), workingConfig.isAutoSignIn())) {
-				parent.getSettingsLoader().setAutoSignIn(String.valueOf(workingConfig.isAutoSignIn()));
-			}
-			
-			if (saveSetting(launchConfig.isUseSysTray(), configFileConfiguration.isUseSysTray(), workingConfig.isUseSysTray())) {
-				parent.getSettingsLoader().setUseSysTray(String.valueOf(workingConfig.isUseSysTray()));
-			}
-			
-			if (saveSetting(launchConfig.isHeadless(), configFileConfiguration.isHeadless(), workingConfig.isHeadless())) {
-				parent.getSettingsLoader().setHeadless(String.valueOf(workingConfig.isHeadless()));
-			}
-			
-			//not needed as the user has no way of modifying that setting after launch
-//			if (saveSetting(launchConfig.getUIType(), configFileConfiguration.getUIType(), workingConfig.getUIType())) {
-//				parent.getSettingsLoader().setUi(workingConfig.getUIType());
-//			}
-			
-			if (saveSetting(launchConfig.getTheme(), configFileConfiguration.getTheme(), workingConfig.getTheme())) {
-				parent.getSettingsLoader().setTheme(workingConfig.getTheme());
-			}
-			
-			if (saveSetting(launchConfig.getPriority(), configFileConfiguration.getPriority(), workingConfig.getPriority())) {
-				parent.getSettingsLoader().setPriority(workingConfig.getPriority());
-			}
-
-			
-		}
-		
-		private <T> boolean saveSetting(T launchValue, T configFileValue, T workingValue) {
-			if (workingValue == null) {
-				return false;
-			}
-			return !workingValue.equals(configFileValue) && !workingValue.equals(launchValue);
 		}
 		
 		private String getCachePath(Configuration config) {

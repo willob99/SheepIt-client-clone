@@ -29,40 +29,105 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import com.sheepit.client.Configuration.ComputeType;
 import com.sheepit.client.hardware.gpu.GPU;
 import com.sheepit.client.hardware.gpu.GPUDevice;
-import com.sheepit.client.standalone.GuiSwing;
 import com.sheepit.client.standalone.GuiText;
 import com.sheepit.client.standalone.GuiTextOneLine;
 import lombok.Data;
 
 @Data
 public class SettingsLoader {
+	
+	private enum PropertyNames {
+		
+		PRIORITY("priority"),
+		CACHE_DIR("cache-dir"),
+		COMPUTE_METHOD("compute-method"),
+		GPU("compute-gpu"),
+		RENDERBUCKET_SIZE("renderbucket-size"),
+		CORES("cores"),
+		CORES_BACKWARDS_COMPAT("cpu-cores"),
+		RAM("ram"),
+		RENDER_TIME("rendertime"),
+		LOGIN("login"),
+		PASSWORD("password"),
+		PROXY("proxy"),
+		HOSTNAME("hostname"),
+		AUTO_SIGNIN("auto-signin"),
+		USE_SYSTRAY("use-systray"),
+		HEADLESS("headless"),
+		UI("ui"),
+		THEME("theme");
+
+		String propertyName;
+
+		PropertyNames(String prop) {
+			this.propertyName = prop;
+		}
+		
+		@Override
+		public String toString() {
+			return propertyName;
+		}
+		
+	}
+	
+	public static final String ARG_SERVER = "-server";
+	public static final String ARG_LOGIN = "-login";
+	public static final String ARG_PASSWORD = "-password";
+	public static final String ARG_CACHE_DIR = "-cache-dir";
+	public static final String ARG_SHARED_ZIP = "-shared-zip";
+	public static final String ARG_GPU = "-gpu";
+	public static final String ARG_NO_GPU = "--no-gpu";
+	public static final String ARG_COMPUTE_METHOD = "-compute-method";
+	public static final String ARG_CORES = "-cores";
+	public static final String ARG_MEMORY = "-memory";
+	public static final String ARG_RENDERTIME = "-rendertime";
+	public static final String ARG_VERBOSE = "--verbose";
+	public static final String ARG_REQUEST_TIME = "-request-time";
+	public static final String ARG_SHUTDOWN = "-shutdown";
+	public static final String ARG_SHUTDOWN_MODE = "-shutdown-mode";
+	public static final String ARG_PROXY = "-proxy";
+	public static final String ARG_EXTRAS = "-extras";
+	public static final String ARG_UI = "-ui";
+	public static final String ARG_CONFIG = "-config";
+	public static final String ARG_VERSION = "--version";
+	public static final String ARG_SHOW_GPU = "--show-gpu";
+	public static final String ARG_NO_SYSTRAY = "--no-systray";
+	public static final String ARG_PRIORITY = "-priority";
+	public static final String ARG_TITLE = "-title";
+	public static final String ARG_THEME = "-theme";
+	public static final String ARG_RENDERBUCKET_SIZE = "-renderbucket-size";
+	public static final String ARG_HOSTNAME = "-hostname";
+	public static final String ARG_HEADLESS = "--headless";
+	
+	
 	private String path;
 	
-	private String login;
+	private Option<String> login;
 	
-	private String password;
+	private Option<String> password;
 	
-	private String proxy;
-	private String hostname;
-	private String computeMethod;
-	private String gpu;
-	private String renderbucketSize;
-	private String cores;
-	private String ram;
-	private String renderTime;
-	private String cacheDir;
-	private String autoSignIn;
-	private String useSysTray;
-	private String headless;
-	private String ui;
-	private String theme;
-	private int priority;
+	private Option<String> proxy;
+	private Option<String> hostname;
+	private Option<String> computeMethod;
+	private Option<String> gpu;
+	private Option<String> renderbucketSize;
+	private Option<String> cores;
+	private Option<String> ram;
+	private Option<String> renderTime;
+	private Option<String> cacheDir;
+	private Option<String> autoSignIn;
+	private Option<String> useSysTray;
+	private Option<String> headless;
+	private Option<String> ui;
+	private Option<String> theme;
+	private Option<Integer> priority;
 	
 	public SettingsLoader(String path_) {
 		if (path_ == null) {
@@ -73,51 +138,72 @@ public class SettingsLoader {
 		}
 	}
 	
-	public SettingsLoader(String path_, String login_, String password_, String proxy_, String hostname_, ComputeType computeMethod_, GPUDevice gpu_,
-		int renderbucketSize_, int cores_, long maxRam_, int maxRenderTime_, String cacheDir_, boolean autoSignIn_, boolean useSysTray_, boolean isHeadless, String ui_,
-		String theme_, int priority_) {
+	public void setSettings(String path_, String login_, String password_, String proxy_, String hostname_,
+		ComputeType computeMethod_, GPUDevice gpu_,	Integer renderbucketSize_, Integer cores_, Long maxRam_,
+		Integer maxRenderTime_, String cacheDir_, Boolean autoSignIn_, Boolean useSysTray_, Boolean isHeadless,
+		String ui_,	String theme_, Integer priority_) {
 		if (path_ == null) {
 			path = getDefaultFilePath();
 		}
 		else {
 			path = path_;
 		}
-		login = login_;
-		password = password_;
-		proxy = proxy_;
-		hostname = hostname_;
-		cacheDir = cacheDir_;
-		autoSignIn = String.valueOf(autoSignIn_);
-		useSysTray = String.valueOf(useSysTray_);
-		headless = String.valueOf(isHeadless);
-		ui = ui_;
-		priority = priority_;
-		theme = theme_;
+		login = setValue(login_, login, ARG_LOGIN);
+		password = setValue(password_, password, ARG_PASSWORD);
+		proxy = setValue(proxy_, proxy, ARG_PROXY);
+		hostname = setValue(hostname_, hostname, ARG_HOSTNAME);
+		cacheDir = setValue(cacheDir_, cacheDir, ARG_CACHE_DIR);
+		autoSignIn = setValue(autoSignIn_.toString(), autoSignIn, "");
+		useSysTray = setValue(useSysTray_.toString(), useSysTray, ARG_NO_SYSTRAY);
+		headless = setValue(isHeadless.toString(), headless, ARG_HEADLESS);
+		ui = setValue(ui_, ui, ARG_UI);
+		priority = setValue(priority_, priority, ARG_PRIORITY);
+		theme = setValue(theme_, theme, ARG_THEME);
+		
+		renderbucketSize = setValue(renderbucketSize_.toString(), renderbucketSize, ARG_RENDERBUCKET_SIZE);
 		
 		if (cores_ > 0) {
-			cores = String.valueOf(cores_);
+			cores = setValue(cores_.toString(), cores, ARG_CORES);
 		}
 		if (maxRam_ > 0) {
-			ram = String.valueOf(maxRam_) + "k";
+			ram = setValue(maxRam_+ "k", ram, ARG_MEMORY);
 		}
 		if (maxRenderTime_ > 0) {
-			renderTime = String.valueOf(maxRenderTime_);
+			renderTime = setValue(maxRenderTime_.toString(), renderTime, ARG_RENDERTIME);
 		}
 		if (computeMethod_ != null) {
 			try {
-				computeMethod = computeMethod_.name();
+				computeMethod = setValue(computeMethod_.name(), computeMethod, ARG_COMPUTE_METHOD);
 			}
 			catch (IllegalArgumentException e) {
 			}
 		}
 		
 		if (gpu_ != null) {
-			gpu = gpu_.getId();
+			gpu = setValue(gpu_.getId(), gpu, ARG_GPU);
 		}
 		
-		if (renderbucketSize_ >= GPU.MIN_RENDERBUCKET_SIZE) {
-			renderbucketSize = String.valueOf(renderbucketSize_);
+		if (renderbucketSize_ != null && renderbucketSize_ >= GPU.MIN_RENDERBUCKET_SIZE) {
+			renderbucketSize = setValue(renderbucketSize_.toString(), renderbucketSize, ARG_RENDERBUCKET_SIZE);
 		}
+	}
+	
+	/**
+	 * sets an option to a given value. If the option being passed on is null it will be created with the given value and returned.
+	 * @param value The value to be set
+	 * @param option The {@link Option} object that the value is going to be stored in. Can be null
+	 * @param launchFlag A flag indicating whether the option was set via a launch argument or not
+	 * @param <T> The type of the value stored within the option
+	 * @return The {@link Option} object that has been passed on as a parameter with the value being set, or a newly created object if option was null
+	 */
+	private <T> Option<T> setValue(T value, Option<T> option, String launchFlag) {
+		if (option == null && value != null) {
+			option = new Option<>(value, launchFlag);
+		}
+		else if (value != null){
+			option.setValue(value);
+		}
+		return option;
 	}
 	
 	public static String getDefaultFilePath() {
@@ -128,77 +214,80 @@ public class SettingsLoader {
 		return path;
 	}
 	
-	public void saveFile() {
+	/**
+	 * Takes the list of launch parameters and marks every config setting corresponding to one of the set values as launch command, ensuring that they wont overwrite
+	 * the one in the config file
+	 * @param argsList a list of the launch arguments
+	 */
+	public void markLaunchSettings(List<String> argsList) {
+		Option options[] = { login, password, proxy, hostname, computeMethod, gpu, renderbucketSize, cores, ram, renderTime, cacheDir, autoSignIn,
+			useSysTray, headless, ui, theme, priority };
+		
+		for (Option option : options) {
+			if (option != null && argsList.contains(option.getLaunchFlag())) {
+				option.setLaunchCommand(true);
+			}
+		}
+	}
+	
+	/**
+	 * Selects the right setting to store to the config file between the value currently set in the config file and the option the client is working with
+	 * currently, depending on whether the setting was set via launch argument or not
+	 * @param saveTo the properties object representing the config file that is going to be written
+	 * @param configFileProperties the properties object containing the current config file values
+	 * @param property an enum representing the name of the setting
+	 * @param option the option containing the currently used value
+	 */
+	private void setProperty(Properties saveTo, Properties configFileProperties, PropertyNames property, Option<String> option) {
+		if (option != null) {
+			if (option.isLaunchCommand()) {
+				String configValue = configFileProperties.getProperty(property.propertyName);
+				if (configValue != null) {
+					saveTo.setProperty(property.propertyName, configValue);
+				}
+			}
+			else {
+				saveTo.setProperty(property.propertyName, option.getValue());
+			}
+		}
+	}
+	
+	@SuppressWarnings("PointlessBooleanExpression") public void saveFile() {
+		
+		Properties configFileProp = new Properties();
+		if (new File(path).exists()) {
+			InputStream input = null;
+			try {
+				input = new FileInputStream(path);
+				configFileProp.load(input);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
 		Properties prop = new Properties();
 		OutputStream output = null;
 		try {
 			output = new FileOutputStream(path);
-			prop.setProperty("priority", new Integer(priority).toString());
 			
-			if (cacheDir != null) {
-				prop.setProperty("cache-dir", cacheDir);
-			}
-			
-			if (computeMethod != null) {
-				prop.setProperty("compute-method", computeMethod);
-			}
-			
-			if (gpu != null) {
-				prop.setProperty("compute-gpu", gpu);
-			}
-			
-			if (renderbucketSize != null) {
-				prop.setProperty("renderbucket-size", renderbucketSize);
-			}
-			
-			if (cores != null) {
-				prop.setProperty("cores", cores);
-			}
-			
-			if (ram != null) {
-				prop.setProperty("ram", ram);
-			}
-			
-			if (renderTime != null) {
-				prop.setProperty("rendertime", renderTime);
-			}
-			
-			if (login != null) {
-				prop.setProperty("login", login);
-			}
-			
-			if (password != null) {
-				prop.setProperty("password", password);
-			}
-			
-			if (proxy != null) {
-				prop.setProperty("proxy", proxy);
-			}
-			
-			if (hostname != null) {
-				prop.setProperty("hostname", hostname);
-			}
-			
-			if (autoSignIn != null) {
-				prop.setProperty("auto-signin", autoSignIn);
-			}
-			
-			if (useSysTray != null) {
-				prop.setProperty("use-systray", useSysTray);
-			}
-			
-			if (headless != null) {
-				prop.setProperty("headless", headless);
-			}
-			
-			if (ui != null) {
-				prop.setProperty("ui", ui);
-			}
-			
-			if (theme != null) {
-				prop.setProperty("theme", theme);
-			}
-			
+			setProperty(prop, configFileProp, PropertyNames.PRIORITY,
+				new Option<>(priority != null ? priority.getValue().toString() : null, priority.isLaunchCommand(), ARG_PRIORITY));
+			setProperty(prop, configFileProp, PropertyNames.CACHE_DIR, cacheDir);
+			setProperty(prop, configFileProp, PropertyNames.COMPUTE_METHOD, computeMethod);
+			setProperty(prop, configFileProp, PropertyNames.GPU, gpu);
+			setProperty(prop, configFileProp, PropertyNames.RENDERBUCKET_SIZE, renderbucketSize);
+			setProperty(prop, configFileProp, PropertyNames.CORES, cores);
+			setProperty(prop, configFileProp, PropertyNames.RAM, ram);
+			setProperty(prop, configFileProp, PropertyNames.RENDER_TIME, renderTime);
+			setProperty(prop, configFileProp, PropertyNames.LOGIN, login);
+			setProperty(prop, configFileProp, PropertyNames.PASSWORD, password);
+			setProperty(prop, configFileProp, PropertyNames.PROXY, proxy);
+			setProperty(prop, configFileProp, PropertyNames.HOSTNAME, hostname);
+			setProperty(prop, configFileProp, PropertyNames.AUTO_SIGNIN, autoSignIn);
+			setProperty(prop, configFileProp, PropertyNames.USE_SYSTRAY, useSysTray);
+			setProperty(prop, configFileProp, PropertyNames.HEADLESS, headless);
+			setProperty(prop, configFileProp, PropertyNames.UI, ui);
+			setProperty(prop, configFileProp, PropertyNames.THEME, theme);
 			prop.store(output, null);
 		}
 		catch (IOException io) {
@@ -231,10 +320,31 @@ public class SettingsLoader {
 		}
 	}
 	
+	/**
+	 * Initializes or sets an option object to the corresponding value from the config file
+	 * @param config the properties loaded from the config file
+	 * @param property the name of the property
+	 * @param option the option to store the property value
+	 * @param launchFlag the launch argument corresponding to the respective option
+	 */
+	private Option<String> loadConfigOption(Properties config, PropertyNames property, Option<String> option, String launchFlag) {
+		String configValue;
+		if (config.containsKey(property.propertyName)) {
+			configValue = config.getProperty(property.propertyName);
+			if (option == null && configValue != null) {
+				option = new Option<>(configValue, launchFlag);
+			}
+			else if (configValue != null){
+				option.setValue(configValue);
+			}
+		}
+		return option;
+	}
 	
-	public void loadFile() throws Exception {
+	public void loadFile(boolean initialize) throws Exception {
 		
-		initWithDefaults();
+		if (initialize)
+			initWithDefaults();
 		
 		if (new File(path).exists() == false) {
 			return;
@@ -246,76 +356,48 @@ public class SettingsLoader {
 			input = new FileInputStream(path);
 			prop.load(input);
 			
-			if (prop.containsKey("cache-dir")) {
-				this.cacheDir = prop.getProperty("cache-dir");
-			}
+			cacheDir = loadConfigOption(prop, PropertyNames.CACHE_DIR, cacheDir, ARG_CACHE_DIR);
 			
-			if (prop.containsKey("compute-method")) {
-				this.computeMethod = prop.getProperty("compute-method");
-			}
+			computeMethod = loadConfigOption(prop, PropertyNames.COMPUTE_METHOD, computeMethod, ARG_COMPUTE_METHOD);
 			
-			if (prop.containsKey("compute-gpu")) {
-				this.gpu = prop.getProperty("compute-gpu");
-			}
+			gpu = loadConfigOption(prop, PropertyNames.GPU, gpu, ARG_GPU);
 			
-			if (prop.containsKey("renderbucket-size")) {
-				this.renderbucketSize = prop.getProperty("renderbucket-size");
-			}
+			renderbucketSize = loadConfigOption(prop, PropertyNames.RENDERBUCKET_SIZE, renderbucketSize, ARG_RENDERBUCKET_SIZE);
 			
-			if (prop.containsKey("cpu-cores")) { // backward compatibility
-				this.cores = prop.getProperty("cpu-cores");
-			}
+			cores = loadConfigOption(prop, PropertyNames.CORES_BACKWARDS_COMPAT, cores, ARG_CORES);
 			
-			if (prop.containsKey("cores")) {
-				this.cores = prop.getProperty("cores");
-			}
+			cores = loadConfigOption(prop, PropertyNames.CORES, cores, ARG_CORES);
 			
-			if (prop.containsKey("ram")) {
-				this.ram = prop.getProperty("ram");
-			}
+			ram = loadConfigOption(prop, PropertyNames.RAM, ram, ARG_MEMORY);
 			
-			if (prop.containsKey("rendertime")) {
-				this.renderTime = prop.getProperty("rendertime");
-			}
+			renderTime = loadConfigOption(prop, PropertyNames.RENDER_TIME, renderTime, ARG_RENDERTIME);
 			
-			if (prop.containsKey("login")) {
-				this.login = prop.getProperty("login");
-			}
+			login = loadConfigOption(prop, PropertyNames.LOGIN, login, ARG_LOGIN);
 			
-			if (prop.containsKey("password")) {
-				this.password = prop.getProperty("password");
-			}
+			password = loadConfigOption(prop, PropertyNames.PASSWORD, password, ARG_PASSWORD);
 			
-			if (prop.containsKey("proxy")) {
-				this.proxy = prop.getProperty("proxy");
-			}
+			proxy = loadConfigOption(prop, PropertyNames.PROXY, proxy, ARG_PROXY);
 			
-			if (prop.containsKey("hostname")) {
-				this.hostname = prop.getProperty("hostname");
-			}
+			hostname = loadConfigOption(prop, PropertyNames.HOSTNAME, hostname, ARG_HOSTNAME);
 			
-			if (prop.containsKey("auto-signin")) {
-				this.autoSignIn = prop.getProperty("auto-signin");
-			}
+			autoSignIn = loadConfigOption(prop, PropertyNames.AUTO_SIGNIN, autoSignIn, "");
 			
-			if (prop.containsKey("use-systray")) {
-				this.useSysTray = prop.getProperty("use-systray");
-			}
+			useSysTray = loadConfigOption(prop, PropertyNames.USE_SYSTRAY, useSysTray, ARG_NO_SYSTRAY);
 			
-			if (prop.containsKey("headless")) {
-				this.headless = prop.getProperty("headless");
-			}
+			headless = loadConfigOption(prop, PropertyNames.HEADLESS, headless, ARG_HEADLESS);
 			
-			if (prop.containsKey("ui")) {
-				this.ui = prop.getProperty("ui");
-			}
+			ui = loadConfigOption(prop, PropertyNames.UI, ui, ARG_UI);
 			
-			if (prop.containsKey("theme")) {
-				this.theme = prop.getProperty("theme");
-			}
+			theme = loadConfigOption(prop, PropertyNames.THEME, theme, ARG_THEME);
 			
-			if (prop.containsKey("priority")) {
-				this.priority = Integer.parseInt(prop.getProperty("priority"));
+			if (prop.containsKey(PropertyNames.PRIORITY.propertyName)) {
+				int prio = Integer.parseInt(prop.getProperty(PropertyNames.PRIORITY.propertyName));
+				if (priority == null) {
+					priority = new Option<>(prio, ARG_PRIORITY);
+				}
+				else {
+					priority.setValue(prio);
+				}
 			}
 		}
 		catch (Exception e) {	//We need the try-catch here to ensure that the input file will be closed though we'll deal with the exception in the calling method
@@ -336,14 +418,16 @@ public class SettingsLoader {
 	/**
 	 * Merge the Settings file with the Configuration.
 	 * The Configuration will have high priority.
+	 * @param config the config file
+	 * @param initialize whether to initialize all fields with default values, should only be true on first call
 	 */
-	public void merge(Configuration config) {
+	public void merge(Configuration config, boolean initialize) {
 		if (config == null) {
 			System.out.println("SettingsLoader::merge config is null");
 		}
 		
 		try {
-			loadFile();
+			loadFile(initialize);
 			applyConfigFileValues(config);
 		}
 		catch (Exception e) {
@@ -357,35 +441,35 @@ public class SettingsLoader {
 	
 	private void applyConfigFileValues(Configuration config) {
 		if (config.getLogin().isEmpty() && login != null) {
-			config.setLogin(login);
+			config.setLogin(login.getValue());
 		}
 		if (config.getPassword().isEmpty() && password != null) {
-			config.setPassword(password);
+			config.setPassword(password.getValue());
 		}
 		
 		if ((config.getProxy() == null || config.getProxy().isEmpty()) && proxy != null) {
-			config.setProxy(proxy);
+			config.setProxy(proxy.getValue());
 		}
 		
 		if ((config.getHostname() == null || config.getHostname().isEmpty() || config.getHostname().equals(config.getDefaultHostname())) && hostname != null) {
-			config.setHostname(hostname);
+			config.setHostname(hostname.getValue());
 		}
 		
-		if (!config.isHeadless() && headless != null) {
-			config.setHeadless(Boolean.parseBoolean(headless));
+		if (config.isHeadless() == false && headless != null) {
+			config.setHeadless(Boolean.parseBoolean(headless.getValue()));
 		}
 		
 		if (config.getPriority() == 19) { // 19 is default value
-			config.setUsePriority(priority);
+			config.setUsePriority(priority.getValue());
 		}
 		try {
 			if (config.getComputeMethod() == null && computeMethod == null) {
 				config.setComputeMethod(ComputeType.CPU);
 			}
 			else if ((config.getComputeMethod() == null && computeMethod != null) || (computeMethod != null && config.getComputeMethod() != ComputeType
-				.valueOf(computeMethod))) {
+				.valueOf(computeMethod.getValue()))) {
 				if (config.getComputeMethod() == null) {
-					config.setComputeMethod(ComputeType.valueOf(computeMethod));
+					config.setComputeMethod(ComputeType.valueOf(computeMethod.getValue()));
 				}
 				
 			}
@@ -395,7 +479,7 @@ public class SettingsLoader {
 			computeMethod = null;
 		}
 		if (config.getGPUDevice() == null && gpu != null) {
-			GPUDevice device = GPU.getGPUDevice(gpu);
+			GPUDevice device = GPU.getGPUDevice(gpu.getValue());
 			if (device != null) {
 				config.setGPUDevice(device);
 				
@@ -406,7 +490,7 @@ public class SettingsLoader {
 				else {
 					// If the configuration file does have any value
 					if (renderbucketSize != null) {
-						config.getGPUDevice().setRenderbucketSize(Integer.valueOf(renderbucketSize));
+						config.getGPUDevice().setRenderbucketSize(Integer.valueOf(renderbucketSize.getValue()));
 					}
 					else {
 						// Don't do anything here as the GPU get's a default value when it's initialised
@@ -429,7 +513,7 @@ public class SettingsLoader {
 				config.getGPUDevice().setRenderbucketSize(config.getRenderbucketSize());
 			}
 			else if (renderbucketSize != null) {
-				config.getGPUDevice().setRenderbucketSize(Integer.parseInt(renderbucketSize));
+				config.getGPUDevice().setRenderbucketSize(Integer.parseInt(renderbucketSize.getValue()));
 			}
 			else {
 				config.getGPUDevice().setRenderbucketSize(config.getGPUDevice().getRecommendedBucketSize());
@@ -437,28 +521,28 @@ public class SettingsLoader {
 		}
 		
 		if (config.getNbCores() == -1 && cores != null) {
-			config.setNbCores(Integer.valueOf(cores));
+			config.setNbCores(Integer.parseInt(cores.getValue()));
 		}
 		
 		if (config.getMaxMemory() == -1 && ram != null) {
-			config.setMaxMemory(Utils.parseNumber(ram) / 1000); // internal ram value is in kB
+			config.setMaxMemory(Utils.parseNumber(ram.getValue()) / 1000); // internal ram value is in kB
 		}
 		
 		if (config.getMaxRenderTime() == -1 && renderTime != null) {
-			config.setMaxRenderTime(Integer.valueOf(renderTime));
+			config.setMaxRenderTime(Integer.parseInt(renderTime.getValue()));
 		}
 		
 		if (config.isUserHasSpecifiedACacheDir() == false && cacheDir != null) {
-			config.setCacheDir(new File(cacheDir));
+			config.setCacheDir(new File(cacheDir.getValue()));
 		}
 		
 		if (config.getUIType() == null && ui != null) {
-			config.setUIType(ui);
+			config.setUIType(ui.getValue());
 		}
 		
 		if (config.getTheme() == null) {
-			if (this.theme != null && (this.theme.equals("dark") || this.theme.equals("light"))) {
-				config.setTheme(this.theme);
+			if (this.theme != null && (this.theme.getValue().equals("dark") || this.theme.getValue().equals("light"))) {
+				config.setTheme(this.theme.getValue());
 			}
 			else {
 				config.setTheme("light");
@@ -467,11 +551,13 @@ public class SettingsLoader {
 		
 		// if the user has invoked the app with --no-systray, then we just overwrite the existing configuration with (boolean)false. If no parameter has been
 		// specified and the settings file contains use-systray=false, then deactivate as well.
-		if (!config.isUseSysTray() || (config.isUseSysTray() && useSysTray != null && useSysTray.equals("false"))) {
+		if (!config.isUseSysTray() || (config.isUseSysTray() && useSysTray != null && useSysTray.getValue().equals("false"))) {
 			config.setUseSysTray(false);
 		}
 		
-		config.setAutoSignIn(Boolean.parseBoolean(autoSignIn));
+		if (config.isAutoSignIn() == false && autoSignIn != null) {
+			config.setAutoSignIn(Boolean.parseBoolean(autoSignIn.getValue()));
+		}
 	}
 	
 	private void initWithDefaults() {
@@ -485,14 +571,14 @@ public class SettingsLoader {
 		this.renderbucketSize = null;
 		this.cacheDir = null;
 		this.autoSignIn = null;
-		this.useSysTray = String.valueOf(defaultConfigValues.isUseSysTray());
-		this.headless = String.valueOf(defaultConfigValues.isHeadless());
+		this.useSysTray = new Option<>(String.valueOf(defaultConfigValues.isUseSysTray()), ARG_NO_SYSTRAY);
+		this.headless = new Option<>(String.valueOf(defaultConfigValues.isHeadless()), ARG_HEADLESS);
 		this.ui = null;
-		this.priority = defaultConfigValues.getPriority(); // must be the same default as Configuration
+		this.priority = new Option<>(defaultConfigValues.getPriority(), ARG_PRIORITY); // must be the same default as Configuration
 		this.ram = null;
 		this.renderTime = null;
 		this.theme = null;
-		this.cores = String.valueOf(defaultConfigValues.getNbCores());
+		this.cores = new Option<>(String.valueOf(defaultConfigValues.getNbCores()), ARG_CORES);
 		
 		
 	}
