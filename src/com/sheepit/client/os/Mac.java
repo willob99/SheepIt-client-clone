@@ -71,7 +71,7 @@ public class Mac extends OS {
 	@Override public boolean isSupported() {
 		String[] ver = operatingSystem.getVersionInfo().getVersion().split("\\.");
 		int majorVer = Integer.parseInt(ver[0]), minorVer = Integer.parseInt(ver[1]);
-		return (majorVer == 10 && minorVer >= 13) || majorVer >= 11;
+		return super.isSupported() && ((majorVer == 10 && minorVer >= 13) || majorVer >= 11);
 	}
 	
 	@Override public String getCUDALib() {

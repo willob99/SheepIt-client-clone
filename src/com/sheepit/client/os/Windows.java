@@ -76,7 +76,7 @@ public class Windows extends OS {
 	
 	@Override public boolean isSupported() {
 		String ver = operatingSystem.getVersionInfo().getVersion();
-		return ver.equals("8.1") || ver.equals("10") || ver.equals("11");
+		return super.isSupported() && (ver.equals("8.1") || ver.equals("10") || ver.equals("11"));
 	}
 	
 	int getPriorityClass(int priority) {

@@ -39,7 +39,7 @@ public abstract class OS {
 	
 	public abstract String name();
 	
-	public boolean isSupported() { return true; }
+	public boolean isSupported() {  return "64bit".equals(getCPU().arch()); }
 	
 	/** Get the full version of the os.
 	 * For example windows, should give "windows 8.1"
