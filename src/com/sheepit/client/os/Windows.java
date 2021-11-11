@@ -28,6 +28,8 @@ import com.sun.jna.Native;
 
 public class Windows extends OS {
 	
+	private static final int MINIMUM_SUPPORTED_BUILD = 9600; //windows 8.1 and Server 2012 R2
+	
 	@Override public String name() {
 		return "windows";
 	}
@@ -75,8 +77,14 @@ public class Windows extends OS {
 	}
 	
 	@Override public boolean isSupported() {
-		String ver = operatingSystem.getVersionInfo().getVersion();
-		return super.isSupported() && (ver.equals("8.1") || ver.equals("10") || ver.equals("11"));
+		long buildNumber = Long.MIN_VALUE;
+		try {
+			buildNumber = Long.valueOf(operatingSystem.getVersionInfo().getBuildNumber());
+		}
+		catch(NumberFormatException e) {
+			System.err.println("Windows::isSupported Failed to extract Windows build number: " + e);
+		}
+		return super.isSupported() && buildNumber >= MINIMUM_SUPPORTED_BUILD;
 	}
 	
 	int getPriorityClass(int priority) {
