@@ -17,6 +17,12 @@ build:
   stage: build
   script:
     - ./gradlew shadowJar
+    - mv ./build/libs/sheepit-client-all.jar ./
+  artifacts:
+    name: "$CI_COMMIT_REF_NAME-sheepit-artifact"
+    paths:
+      - ./sheepit-client-all.jar
+    expire_in: 1 week
 
 test:
   stage: test
