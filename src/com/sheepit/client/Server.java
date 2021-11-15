@@ -35,7 +35,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import com.sheepit.client.datamodel.SpeedTestTarget;
+import com.sheepit.client.datamodel.SpeedTestResult;
+import com.sheepit.client.datamodel.SpeedTestTargetResult;
 import lombok.Getter;
 import org.simpleframework.xml.core.Persister;
 
@@ -74,6 +78,8 @@ import com.sheepit.client.os.OS;
 
 
 public class Server extends Thread {
+	private static final int NUMBER_OF_SPEEDTEST_RESULTS = 3;
+	
 	final private String HTTP_USER_AGENT = "Java/" + System.getProperty("java.version");
 	private String base_url;
 	private final OkHttpClient httpClient;
@@ -136,8 +142,8 @@ public class Server extends Thread {
 						String in = response.body().string();
 						
 						try {
-							HeartBeatInfos heartBeartInfos = new Persister().read(HeartBeatInfos.class, in);
-							ServerCode serverCode = ServerCode.fromInt(heartBeartInfos.getStatus());
+							HeartBeatInfos heartBeatInfos = new Persister().read(HeartBeatInfos.class, in);
+							ServerCode serverCode = ServerCode.fromInt(heartBeatInfos.getStatus());
 							if (serverCode == ServerCode.KEEPMEALIVE_STOP_RENDERING) {
 								this.log.debug("Server::stayAlive server asked to kill local render process");
 								// kill the current process, it will generate an error but it's okay
@@ -250,6 +256,41 @@ public class Server extends Thread {
 		catch (Exception e) {
 			this.log.error("Server::getConfiguration: exception Exception " + e);
 			return Error.Type.UNKNOWN;
+		}
+		
+		if (serverConfig.getSpeedTestTargets() != null && serverConfig.getSpeedTestTargets().isEmpty() == false) {
+			try {
+				client.getGui().status("Checking mirror connection speeds...");
+				Speedtest speedtest = new Speedtest(log);
+				List<SpeedTestTarget> bestSpeedTestTargets = speedtest.doSpeedtests(serverConfig.getSpeedTestTargets().stream().map(m -> m.getUrl()).collect(Collectors.toList()),
+					NUMBER_OF_SPEEDTEST_RESULTS);
+				SpeedTestResult result = new SpeedTestResult();
+				result.setResults(bestSpeedTestTargets.stream().map(m -> {
+					SpeedTestTargetResult targetResult = new SpeedTestTargetResult();
+					targetResult.setTarget(m.getUrl());
+					targetResult.setSpeed(m.getSpeedtest());
+					targetResult.setPing((int) (m.getPing().getAverage()));
+					return targetResult;
+				}).collect(Collectors.toList()));
+				
+				final Persister persister = new Persister();
+				try (StringWriter writer = new StringWriter()) {
+					persister.write(result, writer);
+					
+					HttpUrl.Builder urlBuilder = Objects.requireNonNull(HttpUrl.parse(this.getPage("speedtest-answer"))).newBuilder();
+					Response response = this.HTTPRequest(urlBuilder, RequestBody.create(MediaType.parse("application/xml"), writer.toString()));
+					if (response.code() != HttpURLConnection.HTTP_OK) {
+						throw new IOException("Server::getConfiguration Speedtest unexpected response");
+					}
+				}
+				catch (final Exception e) {
+					throw new IOException("Server::getConfiguration Speedtest failed to generate payload");
+				}
+			}
+			catch (IOException e) {
+				this.log.error("Server::getConfiguration Speedtest failed: " + e);
+				return Error.Type.NETWORK_ISSUE;
+			}
 		}
 		
 		client.setSessionStarted(true);

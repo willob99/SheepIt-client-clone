@@ -1,6 +1,7 @@
 package com.sheepit.client.datamodel;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.ElementList;
@@ -15,6 +16,9 @@ import java.util.List;
 	@Attribute(required = false) @Getter private String publickey;
 	
 	@ElementList(name = "request", inline = true, required = false) private List<RequestEndPoint> requestEndPoints;
+	
+	@Getter @Setter
+	@ElementList(name = "speedtest", required = false) private List<SpeedTestTarget> speedTestTargets;
 	
 	public ServerConfig() {
 	}
