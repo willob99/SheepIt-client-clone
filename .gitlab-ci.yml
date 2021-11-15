@@ -13,13 +13,13 @@ cache:
     - .gradle/wrapper
     - .gradle/caches
 
-build:
+build-client:
   stage: build
   script:
     - ./gradlew shadowJar
     - mv ./build/libs/sheepit-client-all.jar ./
   artifacts:
-    name: "$CI_COMMIT_REF_NAME-sheepit-artifact"
+    name: "$CI_COMMIT_REF_NAME-sheepit-artifact-jar"
     paths:
       - ./sheepit-client-all.jar
     expire_in: 1 week
@@ -28,3 +28,30 @@ test:
   stage: test
   script:
     - ./gradlew check
+
+wrap-client:
+  stage: build
+  image: debian:stable-slim
+  needs:
+    - job: build-client
+      artifacts: true
+  variables:
+      JVM_NAME: "jdk-11.0.13+8-jre"  # Taken from https://adoptium.net/releases.html?variant=openjdk11&jvmVariant=hotspot
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends unzip p7zip wget ca-certificates  # Add dependencies
+    - mkdir jre  # Make folder hierarchy
+    - cp ./sheepit-client-all.jar jre/  # Copy client artifact to be packaged
+    - wget https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.13%2B8/OpenJDK11U-jre_x64_windows_hotspot_11.0.13_8.zip -O $JVM_NAME.zip
+    - unzip $JVM_NAME.zip  # Unzip the JRE
+    - cp -rf $JVM_NAME/* jre/  # Copy JRE to be packaged
+    - cd jre
+    - 7zr a -mx=9 ../application.7z ./  # Compress and archive app package
+    - cd ..
+    - cat exe-wrapper/starter.sfx exe-wrapper/config.cfg application.7z > sheepit-wrapper.exe
+    # Write wrapper-executable, wrapper-config and app package into final exe artifact
+  artifacts:
+    name: "$CI_COMMIT_REF_NAME-sheepit-artifact-exe"
+    paths:
+      - ./sheepit-wrapper.exe
+    expire_in: 1 week
