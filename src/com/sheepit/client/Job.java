@@ -134,7 +134,8 @@ import java.util.regex.Pattern;
 	}
 	
 	private OSProcess getRenderOSProcess() {
-		return OS.operatingSystem.getProcess((int) getProcessRender().getProcess().pid());
+		Process proc = getProcessRender().getProcess();
+		return proc == null ? null : OS.operatingSystem.getProcess((int) proc.pid()); // Check for null otherwise proc.pid() will throw NullPointerEx
 	}
 	
 	public long getUsedMemory() {
@@ -609,18 +610,20 @@ import java.util.regex.Pattern;
 	}
 	
 	private void updateRenderingMemoryPeak() {
-		long mem = getUsedMemory();
-		getProcessRender().setMemoryUsed(mem);
-		if (getProcessRender().getPeakMemoryUsed() < mem) {
-			getProcessRender().setPeakMemoryUsed(mem);
+		if (getProcessRender().getProcess() != null && getRenderOSProcess() != null){
+			long mem = getUsedMemory();
+			getProcessRender().setMemoryUsed(mem);
+			if (getProcessRender().getPeakMemoryUsed() < mem) {
+				getProcessRender().setPeakMemoryUsed(mem);
+			}
+			double memoryConsumed = getUsedMemory() / 1024.0;
+			double peakMemoryConsumed = getProcessRender().getPeakMemoryUsed() / 1024.0;
+			double totalUsedMemory = getTotalUsedMemory() / 1024.0;
+			double systemMemoryAvailable = OS.getOS().getFreeMemory() / 1024.0;
+			int threadCount = getThreadCount();
+			log.debug(String.format("RAM Consumed: %(,.2fMB | Peak RAM Consumed: %(,.2fMB | Virtual Mem Consumed: %(,.2fMB | System Available Memory: %(,.2fMB | Thread Count: %d",
+				memoryConsumed, peakMemoryConsumed, totalUsedMemory, systemMemoryAvailable, threadCount));
 		}
-		double memoryConsumed = getUsedMemory() / 1024.0;
-		double peakMemoryConsumed = getProcessRender().getPeakMemoryUsed() / 1024.0;
-		double totalUsedMemory = getTotalUsedMemory() / 1024.0;
-		double systemMemoryAvailable = OS.getOS().getFreeMemory() / 1024.0;
-		int threadCount = getThreadCount();
-		log.debug(String.format("RAM Consumed: %(,.2fMB | Peak RAM Consumed: %(,.2fMB | Virtual Mem Consumed: %(,.2fMB | System Available Memory: %(,.2fMB | Thread Count: %d",
-			memoryConsumed, peakMemoryConsumed, totalUsedMemory, systemMemoryAvailable, threadCount));
 	}
 	
 	private Type detectError(String line) {
