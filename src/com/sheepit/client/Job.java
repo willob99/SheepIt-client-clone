@@ -139,12 +139,12 @@ import java.util.regex.Pattern;
 	
 	public long getUsedMemory() {
 		OSProcess osp = getRenderOSProcess();
-		return osp != null ? osp.getResidentSetSize() : 0;
+		return osp != null ? osp.getResidentSetSize() / 1024 : 0;
 	}
 	
 	public long getTotalUsedMemory() {
 		OSProcess osp = getRenderOSProcess();
-		return osp != null ? osp.getVirtualSize() : 0;
+		return osp != null ? osp.getVirtualSize() / 1024 : 0;
 	}
 	
 	private int getThreadCount() {
@@ -365,8 +365,8 @@ import java.util.regex.Pattern;
 					
 					progress = computeRenderingProgress(line, tilePattern, progress);
 					updateRenderingMemoryPeak();
-					if (configuration.getMaxAllowedMemory() != -1 && (getUsedMemory() / 1024L) > configuration.getMaxAllowedMemory()) {
-						log.debug("Blocking render because process ram used (" + (getUsedMemory() / 1024L) + "k) is over user setting (" + configuration
+					if (configuration.getMaxAllowedMemory() != -1 && getUsedMemory() > configuration.getMaxAllowedMemory()) {
+						log.debug("Blocking render because process ram used (" + getUsedMemory() + "k) is over user setting (" + configuration
 								.getMaxAllowedMemory() + "k)");
 						OS.getOS().kill(process.getProcess());
 						process.finish();
@@ -609,14 +609,14 @@ import java.util.regex.Pattern;
 	}
 	
 	private void updateRenderingMemoryPeak() {
-		long mem = getUsedMemory() / 1024L; // convert into kB
+		long mem = getUsedMemory();
 		getProcessRender().setMemoryUsed(mem);
 		if (getProcessRender().getPeakMemoryUsed() < mem) {
 			getProcessRender().setPeakMemoryUsed(mem);
 		}
-		double memoryConsumed = getUsedMemory() / 1024.0 / 1024.0;
+		double memoryConsumed = getUsedMemory() / 1024.0;
 		double peakMemoryConsumed = getProcessRender().getPeakMemoryUsed() / 1024.0;
-		double totalUsedMemory = getTotalUsedMemory() / 1024.0 / 1024.0;
+		double totalUsedMemory = getTotalUsedMemory() / 1024.0;
 		double systemMemoryAvailable = OS.getOS().getFreeMemory() / 1024.0;
 		int threadCount = getThreadCount();
 		log.debug(String.format("RAM Consumed: %(,.2fMB | Peak RAM Consumed: %(,.2fMB | Virtual Mem Consumed: %(,.2fMB | System Available Memory: %(,.2fMB | Thread Count: %d",
