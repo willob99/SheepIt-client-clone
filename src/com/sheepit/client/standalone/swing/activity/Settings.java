@@ -407,7 +407,7 @@ public class Settings implements Activity {
 		
 		// max ram allowed to render
 		OS os = OS.getOS();
-		int all_ram = (int) os.getMemory();
+		int all_ram = (int) os.getTotalMemory();
 		ram = new JSlider(0, all_ram);
 		int step = 1000000;
 		double display = (double) all_ram / (double) step;
@@ -428,7 +428,7 @@ public class Settings implements Activity {
 			}
 		});
 		ram.setPaintLabels(true);
-		ram.setValue((int) (config.getMaxMemory() != -1 ? config.getMaxMemory() : os.getMemory()));
+		ram.setValue((int) (config.getMaxAllowedMemory() != -1 ? config.getMaxAllowedMemory() : os.getTotalMemory()));
 		JLabel ramLabel = new JLabel("Memory:");
 		ramLabel.setToolTipText(SwingTooltips.MEMORY.getText());
 		
@@ -798,7 +798,7 @@ public class Settings implements Activity {
 			}
 			
 			if (max_ram > 0) {
-				config.setMaxMemory(max_ram);
+				config.setMaxAllowedMemory(max_ram);
 			}
 			
 			int max_rendertime = -1;

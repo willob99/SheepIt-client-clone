@@ -55,7 +55,7 @@ import lombok.Data;
 	private String proxy;
 	private int maxUploadingJob;
 	private int nbCores;
-	private long maxMemory; // max memory allowed for render
+	private long maxAllowedMemory; // in KiB, max memory allowed for render
 	private int maxRenderTime; // max render time per frame allowed
 	private int priority;
 	private ComputeType computeMethod;
@@ -83,7 +83,7 @@ import lombok.Data;
 		this.static_exeDirName = "exe";
 		this.maxUploadingJob = 1;
 		this.nbCores = -1; // ie not set
-		this.maxMemory = -1; // ie not set
+		this.maxAllowedMemory = -1; // ie not set
 		this.maxRenderTime = -1; // ie not set
 		this.priority = 19; // default lowest
 		this.computeMethod = null;
@@ -109,7 +109,7 @@ import lombok.Data;
 	
 	public Configuration(Configuration config) {
 		this(config.configFilePath, config.workingDirectory, config.sharedDownloadsDirectory, config.storageDirectory, config.userHasSpecifiedACacheDir,
-			config.static_exeDirName, config.login, config.password, config.proxy, config.maxUploadingJob, config.nbCores, config.maxMemory, config.maxRenderTime,
+			config.static_exeDirName, config.login, config.password, config.proxy, config.maxUploadingJob, config.nbCores, config.maxAllowedMemory, config.maxRenderTime,
 			config.priority, config.computeMethod, config.GPUDevice, config.renderbucketSize, config.detectGPUs, config.printLog, config.requestTime, config.shutdownTime,
 			config.shutdownMode, config.extras, config.autoSignIn, config.useSysTray, config.headless, config.UIType, config.hostname, config.theme);
 	}

@@ -28,6 +28,7 @@ import java.util.Date;
 	private long endTime;
 	private int remainingDuration; // in seconds
 	private long memoryUsed; // in kB
+	private long peakMemoryUsed; // in kB
 	private int coresUsed;
 	private Process process;
 	
@@ -36,6 +37,7 @@ import java.util.Date;
 		startTime = -1;
 		endTime = -1;
 		memoryUsed = 0;
+		peakMemoryUsed = 0;
 		coresUsed = 0;
 		remainingDuration = 0;
 	}

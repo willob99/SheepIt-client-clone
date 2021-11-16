@@ -621,7 +621,7 @@ import okhttp3.HttpUrl;
 			StringBuilder logHeader = new StringBuilder()
 				.append("====================================================================================================\n")
 				.append(String.format("%s  /  %s  /  %s  /  SheepIt v%s\n", conf.getLogin(), conf.getHostname(), OS.getOS().name(), conf.getJarVersion()))
-				.append(String.format("%s  x%d  %.1f GB RAM\n", cpu.name(), conf.getNbCores(), conf.getMaxMemory() / 1024.0 / 1024.0));
+				.append(String.format("%s  x%d  %.1f GB RAM\n", cpu.name(), conf.getNbCores(), conf.getMaxAllowedMemory() / 1024.0 / 1024.0));
 			
 			if (conf.getComputeMethod() == Configuration.ComputeType.GPU || conf.getComputeMethod() == Configuration.ComputeType.CPU_GPU) {
 				logHeader.append(String.format("%s   %s   %.1f GB VRAM\n", conf.getGPUDevice().getId(), conf.getGPUDevice().getModel(),
@@ -657,7 +657,7 @@ import okhttp3.HttpUrl;
 				remoteURL.addQueryParameter("frame", job_to_reset_.getFrameNumber());
 				remoteURL.addQueryParameter("job", job_to_reset_.getId());
 				remoteURL.addQueryParameter("render_time", Integer.toString(job_to_reset_.getProcessRender().getDuration()));
-				remoteURL.addQueryParameter("memoryused", Long.toString(job_to_reset_.getProcessRender().getMemoryUsed()));
+				remoteURL.addQueryParameter("memoryused", Long.toString(job_to_reset_.getProcessRender().getPeakMemoryUsed()));
 				if (job_to_reset_.getExtras() != null && job_to_reset_.getExtras().isEmpty() == false) {
 					remoteURL.addQueryParameter("extras", job_to_reset_.getExtras());
 				}
@@ -1017,7 +1017,7 @@ import okhttp3.HttpUrl;
 	
 	protected Error.Type confirmJob(Job ajob, int checkpoint) {
 		String url_real = String.format("%s&rendertime=%d&memoryused=%s", ajob.getValidationUrl(), ajob.getProcessRender().getDuration(),
-				ajob.getProcessRender().getMemoryUsed());
+				ajob.getProcessRender().getPeakMemoryUsed());
 		this.log.debug(checkpoint, "Client::confirmeJob url " + url_real);
 		this.log.debug(checkpoint, "path frame " + ajob.getOutputImagePath());
 		

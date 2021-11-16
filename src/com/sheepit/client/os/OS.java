@@ -31,7 +31,7 @@ import com.sheepit.client.hardware.cpu.CPU;
 public abstract class OS {
 	private static SystemInfo systemInfo = new SystemInfo();
 	
-	static OperatingSystem operatingSystem = systemInfo.getOperatingSystem();
+	public static OperatingSystem operatingSystem = systemInfo.getOperatingSystem();
 	
 	private static HardwareAbstractionLayer hardwareAbstractionLayer = systemInfo.getHardware();
 	
@@ -48,7 +48,7 @@ public abstract class OS {
 		return (name() + " " + operatingSystem.getVersionInfo()).toLowerCase();
 	}
 	
-	public long getMemory() {
+	public long getTotalMemory() {
 		return hardwareAbstractionLayer.getMemory().getTotal() / 1024;
 	}
 	

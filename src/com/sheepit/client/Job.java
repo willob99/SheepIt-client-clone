@@ -22,10 +22,10 @@ package com.sheepit.client;
 import com.sheepit.client.Configuration.ComputeType;
 import com.sheepit.client.Error.Type;
 import com.sheepit.client.hardware.cpu.CPU;
-import com.sheepit.client.hardware.gpu.opencl.OpenCL;
 import com.sheepit.client.os.OS;
 import lombok.Data;
 import lombok.Getter;
+import oshi.software.os.OSProcess;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -131,6 +131,25 @@ import java.util.regex.Pattern;
 		return String
 				.format("Job (numFrame '%s' sceneMD5 '%s' rendererMD5 '%s' ID '%s' pictureFilename '%s' jobPath '%s' gpu %s name '%s' extras '%s' updateRenderingStatusMethod '%s' render %s)",
 						frameNumber, sceneMD5, rendererMD5, id, outputImagePath, path, useGPU, name, extras, updateRenderingStatusMethod, render);
+	}
+	
+	private OSProcess getRenderOSProcess() {
+		return OS.operatingSystem.getProcess((int) getProcessRender().getProcess().pid());
+	}
+	
+	public long getUsedMemory() {
+		OSProcess osp = getRenderOSProcess();
+		return osp != null ? osp.getResidentSetSize() : 0;
+	}
+	
+	public long getTotalUsedMemory() {
+		OSProcess osp = getRenderOSProcess();
+		return osp != null ? osp.getVirtualSize() : 0;
+	}
+	
+	private int getThreadCount() {
+		OSProcess osp = getRenderOSProcess();
+		return osp != null ? osp.getThreadCount() : 0;
 	}
 	
 	public String getPrefixOutputImage() {
@@ -284,6 +303,7 @@ import java.util.regex.Pattern;
 			}
 		}
 		
+		Timer memoryCheck = new Timer();
 		try {
 			renderStartedObservable event = new renderStartedObservable(renderStarted);
 			String line;
@@ -293,6 +313,12 @@ import java.util.regex.Pattern;
 			process.start();
 			getProcessRender().setProcess(os.exec(command, new_env));
 			BufferedReader input = new BufferedReader(new InputStreamReader(getProcessRender().getProcess().getInputStream()));
+			memoryCheck.scheduleAtFixedRate(new TimerTask() {
+				@Override
+				public void run() {
+					updateRenderingMemoryPeak();
+				}
+			}, 0L, 1000L);
 			
 			// Make initial test/power frames ignore the maximum render time in user configuration. Initial test frames have Job IDs below 20
 			// so we just activate the user defined timeout when the scene is not one of the initial ones.
@@ -338,11 +364,10 @@ import java.util.regex.Pattern;
 					}
 					
 					progress = computeRenderingProgress(line, tilePattern, progress);
-					
-					updateRenderingMemoryPeak(line);
-					if (configuration.getMaxMemory() != -1 && process.getMemoryUsed() > configuration.getMaxMemory()) {
-						log.debug("Blocking render because process ram used (" + process.getMemoryUsed() + "k) is over user setting (" + configuration
-								.getMaxMemory() + "k)");
+					updateRenderingMemoryPeak();
+					if (configuration.getMaxAllowedMemory() != -1 && (getUsedMemory() / 1024L) > configuration.getMaxAllowedMemory()) {
+						log.debug("Blocking render because process ram used (" + (getUsedMemory() / 1024L) + "k) is over user setting (" + configuration
+								.getMaxAllowedMemory() + "k)");
 						OS.getOS().kill(process.getProcess());
 						process.finish();
 						if (script_file != null) {
@@ -369,7 +394,7 @@ import java.util.regex.Pattern;
 						return error;
 					}
 					
-					if (!event.isStarted() && (process.getMemoryUsed() > 0 || process.getRemainingDuration() > 0)) {
+					if (!event.isStarted() && (getUsedMemory() > 0 || process.getRemainingDuration() > 0)) {
 						event.doNotifyIsStarted();
 					}
 				}
@@ -378,6 +403,9 @@ import java.util.regex.Pattern;
 			catch (IOException err1) { // for the input.readline
 				// most likely The handle is invalid
 				log.error("Job::render exception(B) (silent error) " + err1);
+			}
+			finally {
+				memoryCheck.cancel();
 			}
 			
 			// Put back base icon
@@ -580,41 +608,19 @@ import java.util.regex.Pattern;
 		}
 	}
 	
-	private void updateRenderingMemoryPeak(String line) {
-		String[] elements = line.toLowerCase().split("(peak)");
-		
-		for (String element : elements) {
-			if (!element.isEmpty() && element.charAt(0) == ' ') {
-				int end = element.indexOf(')');
-				if (end > 0) {
-					try {
-						long mem = Utils.parseNumber(element.substring(1, end).trim()) / 1000; // internal use of ram is in kB
-						if (mem > getProcessRender().getMemoryUsed()) {
-							getProcessRender().setMemoryUsed(mem);
-						}
-					}
-					catch (IllegalStateException | NumberFormatException e) {
-						// failed to parseNumber
-					}
-				}
-			}
-			else {
-				if (!element.isEmpty() && element.charAt(0) == ':') {
-					int end = element.indexOf('|');
-					if (end > 0) {
-						try {
-							long mem = Utils.parseNumber(element.substring(1, end).trim()) / 1000; // internal use of ram is in kB
-							if (mem > getProcessRender().getMemoryUsed()) {
-								getProcessRender().setMemoryUsed(mem);
-							}
-						}
-						catch (IllegalStateException | NumberFormatException e) {
-							// failed to parseNumber
-						}
-					}
-				}
-			}
+	private void updateRenderingMemoryPeak() {
+		long mem = getUsedMemory() / 1024L; // convert into kB
+		getProcessRender().setMemoryUsed(mem);
+		if (getProcessRender().getPeakMemoryUsed() < mem) {
+			getProcessRender().setPeakMemoryUsed(mem);
 		}
+		double memoryConsumed = getUsedMemory() / 1024.0 / 1024.0;
+		double peakMemoryConsumed = getProcessRender().getPeakMemoryUsed() / 1024.0;
+		double totalUsedMemory = getTotalUsedMemory() / 1024.0 / 1024.0;
+		double systemMemoryAvailable = OS.getOS().getFreeMemory() / 1024.0;
+		int threadCount = getThreadCount();
+		log.debug(String.format("RAM Consumed: %(,.2fMB | Peak RAM Consumed: %(,.2fMB | Virtual Mem Consumed: %(,.2fMB | System Available Memory: %(,.2fMB | Thread Count: %d",
+			memoryConsumed, peakMemoryConsumed, totalUsedMemory, systemMemoryAvailable, threadCount));
 	}
 	
 	private Type detectError(String line) {

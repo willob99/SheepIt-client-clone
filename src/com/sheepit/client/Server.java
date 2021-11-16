@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import com.sheepit.client.datamodel.SpeedTestTarget;
 import com.sheepit.client.datamodel.SpeedTestResult;
 import com.sheepit.client.datamodel.SpeedTestTargetResult;
+import com.sheepit.client.os.Windows;
 import lombok.Getter;
 import org.simpleframework.xml.core.Persister;
 
@@ -205,7 +206,7 @@ public class Server extends Thread {
 				.add("cpu_cores", String.valueOf(user_config.getNbCores() == -1 ? os.getCPU().cores() : Math.max(CPU.MIN_CORES, user_config.getNbCores())))
 				.add("os", os.name())
 				.add("os_version", os.getVersion())
-				.add("ram", String.valueOf(os.getMemory()))
+				.add("ram", String.valueOf(os.getTotalMemory()))
 				.add("bits", os.getCPU().arch())
 				.add("version", user_config.getJarVersion())
 				.add("hostname", user_config.getHostname())
@@ -305,8 +306,8 @@ public class Server extends Thread {
 		
 		try {
 			OS os = OS.getOS();
-			long maxMemory = this.user_config.getMaxMemory();
-			long freeMemory = os.getFreeMemory();
+			long maxMemory = this.user_config.getMaxAllowedMemory();
+			long freeMemory = os.getFreeMemory() - 1024^2 /*One gigabyte*/ * (os instanceof Windows ? 2 : 1); //Make RAM to reserve 2GB on Windows
 			if (maxMemory < 0) {
 				maxMemory = freeMemory;
 			}

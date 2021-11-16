@@ -247,7 +247,7 @@ public class Worker {
 		
 		if (max_ram != null) {
 			try {
-				config.setMaxMemory(Utils.parseNumber(max_ram) / 1000); // internal value are in kB
+				config.setMaxAllowedMemory(Utils.parseNumber(max_ram) / 1024); // internal value is in KiB
 			}
 			catch (java.lang.IllegalStateException e) {
 				System.err.println(
