@@ -41,7 +41,7 @@ wrap-client:
     - apt-get update
     - apt-get install -y --no-install-recommends unzip p7zip wget ca-certificates  # Add dependencies
     - mkdir jre  # Make folder hierarchy
-    - cp ./sheepit-client-all.jar jre/  # Copy client artifact to be packaged
+    - cp ./sheepit-client-all.jar jre/sheepit-client.jar  # Copy client artifact to be packaged
     - wget https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.13%2B8/OpenJDK11U-jre_x64_windows_hotspot_11.0.13_8.zip -O $JVM_NAME.zip
     - unzip $JVM_NAME.zip  # Unzip the JRE
     - cp -rf $JVM_NAME/* jre/  # Copy JRE to be packaged
