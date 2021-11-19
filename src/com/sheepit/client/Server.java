@@ -330,7 +330,7 @@ public class Server extends Thread {
 					.addQueryParameter("gpu_type", user_config.getGPUDevice().getType());
 			}
 			
-			Response response = this.HTTPRequest(urlBuilder, RequestBody.create(MediaType.parse("application/xml"), this.generateXMLForMD5cache()));
+			Response response = this.HTTPRequest(urlBuilder, RequestBody.create(this.generateXMLForMD5cache(), MediaType.parse("application/xml")));
 			
 			int r = response.code();
 			String contentType = response.body().contentType().toString();

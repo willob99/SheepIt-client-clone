@@ -79,7 +79,7 @@ public class Windows extends OS {
 	@Override public boolean isSupported() {
 		long buildNumber = Long.MIN_VALUE;
 		try {
-			buildNumber = Long.valueOf(operatingSystem.getVersionInfo().getBuildNumber());
+			buildNumber = Long.parseLong(operatingSystem.getVersionInfo().getBuildNumber());
 		}
 		catch(NumberFormatException e) {
 			System.err.println("Windows::isSupported Failed to extract Windows build number: " + e);

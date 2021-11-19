@@ -417,7 +417,7 @@ public class Settings implements Activity {
 		}
 		Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
 		for (int g = 0; g < all_ram; g += step) {
-			labelTable.put(new Integer(g), new JLabel("" + (g / 1000000)));
+			labelTable.put(g, new JLabel("" + (g / 1000000)));
 		}
 		ram.setMajorTickSpacing(step);
 		ram.setLabelTable(labelTable);
