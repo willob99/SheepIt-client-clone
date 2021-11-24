@@ -616,13 +616,6 @@ import java.util.regex.Pattern;
 			if (getProcessRender().getPeakMemoryUsed() < mem) {
 				getProcessRender().setPeakMemoryUsed(mem);
 			}
-			double memoryConsumed = getUsedMemory() / 1024.0;
-			double peakMemoryConsumed = getProcessRender().getPeakMemoryUsed() / 1024.0;
-			double totalUsedMemory = getTotalUsedMemory() / 1024.0;
-			double systemMemoryAvailable = OS.getOS().getFreeMemory() / 1024.0;
-			int threadCount = getThreadCount();
-			log.debug(String.format("RAM Consumed: %(,.2fMB | Peak RAM Consumed: %(,.2fMB | Virtual Mem Consumed: %(,.2fMB | System Available Memory: %(,.2fMB | Thread Count: %d",
-				memoryConsumed, peakMemoryConsumed, totalUsedMemory, systemMemoryAvailable, threadCount));
 		}
 	}
 	
