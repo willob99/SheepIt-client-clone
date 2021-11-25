@@ -231,6 +231,10 @@ public class Utils {
 		if (mimeType == null) {
 			mimeType = URLConnection.guessContentTypeFromName(file);
 		}
+		
+		if (mimeType == null && file.endsWith(".tga")) { // fallback for TGA
+			mimeType = "image/tga";
+		}
 
 		return mimeType;
 	}
