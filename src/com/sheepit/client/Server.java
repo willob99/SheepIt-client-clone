@@ -261,7 +261,7 @@ public class Server extends Thread {
 		
 		if (serverConfig.getSpeedTestTargets() != null && serverConfig.getSpeedTestTargets().isEmpty() == false) {
 			try {
-				client.getGui().status("Checking mirror connection speeds...");
+				client.getGui().status("Checking mirror connection speeds");
 				Speedtest speedtest = new Speedtest(log);
 				List<SpeedTestTarget> bestSpeedTestTargets = speedtest.doSpeedtests(serverConfig.getSpeedTestTargets().stream().map(m -> m.getUrl()).collect(Collectors.toList()),
 					NUMBER_OF_SPEEDTEST_RESULTS);
