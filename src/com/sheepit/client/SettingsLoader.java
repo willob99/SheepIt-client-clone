@@ -49,7 +49,6 @@ public class SettingsLoader {
 		CACHE_DIR("cache-dir"),
 		COMPUTE_METHOD("compute-method"),
 		GPU("compute-gpu"),
-		RENDERBUCKET_SIZE("renderbucket-size"),
 		CORES("cores"),
 		CORES_BACKWARDS_COMPAT("cpu-cores"),
 		RAM("ram"),
@@ -102,7 +101,6 @@ public class SettingsLoader {
 	public static final String ARG_PRIORITY = "-priority";
 	public static final String ARG_TITLE = "-title";
 	public static final String ARG_THEME = "-theme";
-	public static final String ARG_RENDERBUCKET_SIZE = "-renderbucket-size";
 	public static final String ARG_HOSTNAME = "-hostname";
 	public static final String ARG_HEADLESS = "--headless";
 	
@@ -117,7 +115,6 @@ public class SettingsLoader {
 	private Option<String> hostname;
 	private Option<String> computeMethod;
 	private Option<String> gpu;
-	private Option<String> renderbucketSize;
 	private Option<String> cores;
 	private Option<String> ram;
 	private Option<String> renderTime;
@@ -139,7 +136,7 @@ public class SettingsLoader {
 	}
 	
 	public void setSettings(String path_, String login_, String password_, String proxy_, String hostname_,
-		ComputeType computeMethod_, GPUDevice gpu_,	Integer renderbucketSize_, Integer cores_, Long maxRam_,
+		ComputeType computeMethod_, GPUDevice gpu_, Integer cores_, Long maxRam_,
 		Integer maxRenderTime_, String cacheDir_, Boolean autoSignIn_, Boolean useSysTray_, Boolean isHeadless,
 		String ui_,	String theme_, Integer priority_) {
 		if (path_ == null) {
@@ -160,8 +157,6 @@ public class SettingsLoader {
 		priority = setValue(priority_, priority, ARG_PRIORITY);
 		theme = setValue(theme_, theme, ARG_THEME);
 		
-		renderbucketSize = setValue(renderbucketSize_.toString(), renderbucketSize, ARG_RENDERBUCKET_SIZE);
-		
 		if (cores_ > 0) {
 			cores = setValue(cores_.toString(), cores, ARG_CORES);
 		}
@@ -181,10 +176,6 @@ public class SettingsLoader {
 		
 		if (gpu_ != null) {
 			gpu = setValue(gpu_.getId(), gpu, ARG_GPU);
-		}
-		
-		if (renderbucketSize_ != null && renderbucketSize_ >= GPU.MIN_RENDERBUCKET_SIZE) {
-			renderbucketSize = setValue(renderbucketSize_.toString(), renderbucketSize, ARG_RENDERBUCKET_SIZE);
 		}
 	}
 	
@@ -220,7 +211,7 @@ public class SettingsLoader {
 	 * @param argsList a list of the launch arguments
 	 */
 	public void markLaunchSettings(List<String> argsList) {
-		Option options[] = { login, password, proxy, hostname, computeMethod, gpu, renderbucketSize, cores, ram, renderTime, cacheDir, autoSignIn,
+		Option options[] = { login, password, proxy, hostname, computeMethod, gpu, cores, ram, renderTime, cacheDir, autoSignIn,
 			useSysTray, headless, ui, theme, priority };
 		
 		for (Option option : options) {
@@ -275,7 +266,6 @@ public class SettingsLoader {
 			setProperty(prop, configFileProp, PropertyNames.CACHE_DIR, cacheDir);
 			setProperty(prop, configFileProp, PropertyNames.COMPUTE_METHOD, computeMethod);
 			setProperty(prop, configFileProp, PropertyNames.GPU, gpu);
-			setProperty(prop, configFileProp, PropertyNames.RENDERBUCKET_SIZE, renderbucketSize);
 			setProperty(prop, configFileProp, PropertyNames.CORES, cores);
 			setProperty(prop, configFileProp, PropertyNames.RAM, ram);
 			setProperty(prop, configFileProp, PropertyNames.RENDER_TIME, renderTime);
@@ -361,8 +351,6 @@ public class SettingsLoader {
 			computeMethod = loadConfigOption(prop, PropertyNames.COMPUTE_METHOD, computeMethod, ARG_COMPUTE_METHOD);
 			
 			gpu = loadConfigOption(prop, PropertyNames.GPU, gpu, ARG_GPU);
-			
-			renderbucketSize = loadConfigOption(prop, PropertyNames.RENDERBUCKET_SIZE, renderbucketSize, ARG_RENDERBUCKET_SIZE);
 			
 			cores = loadConfigOption(prop, PropertyNames.CORES_BACKWARDS_COMPAT, cores, ARG_CORES);
 			
@@ -482,41 +470,10 @@ public class SettingsLoader {
 			GPUDevice device = GPU.getGPUDevice(gpu.getValue());
 			if (device != null) {
 				config.setGPUDevice(device);
-				
-				// If the user has indicated a render bucket size at least 32x32 px, overwrite the config file value
-				if (config.getRenderbucketSize() >= GPU.MIN_RENDERBUCKET_SIZE) {
-					config.getGPUDevice().setRenderbucketSize(config.getRenderbucketSize());    // Update size
-				}
-				else {
-					// If the configuration file does have any value
-					if (renderbucketSize != null) {
-						config.getGPUDevice().setRenderbucketSize(Integer.valueOf(renderbucketSize.getValue()));
-					}
-					else {
-						// Don't do anything here as the GPU get's a default value when it's initialised
-						// The configuration will take the default GPU value
-					}
-				}
-				
-				// And now update the client configuration with the new value
-				config.setRenderbucketSize(config.getGPUDevice().getRenderbucketSize());
 			}
 			else if (config.getUIType() != null && (config.getUIType().equals(GuiText.type) || config.getUIType().equals(GuiTextOneLine.type))) {
 				System.err.println("SettingsLoader::merge could not find specified GPU");
 				System.exit(2);
-			}
-		}
-		else if (config.getGPUDevice() != null) {
-			// The order of conditions is important to ensure the priority or app arguments, then the config file and finally the recommended size (if none
-			// specified or already in config file).
-			if (config.getRenderbucketSize() >= GPU.MIN_RENDERBUCKET_SIZE) {
-				config.getGPUDevice().setRenderbucketSize(config.getRenderbucketSize());
-			}
-			else if (renderbucketSize != null) {
-				config.getGPUDevice().setRenderbucketSize(Integer.parseInt(renderbucketSize.getValue()));
-			}
-			else {
-				config.getGPUDevice().setRenderbucketSize(config.getGPUDevice().getRecommendedBucketSize());
 			}
 		}
 		
@@ -568,7 +525,6 @@ public class SettingsLoader {
 		this.hostname = null;
 		this.computeMethod = null;
 		this.gpu = null;
-		this.renderbucketSize = null;
 		this.cacheDir = null;
 		this.autoSignIn = null;
 		this.useSysTray = new Option<>(String.valueOf(defaultConfigValues.isUseSysTray()), ARG_NO_SYSTRAY);
@@ -585,7 +541,7 @@ public class SettingsLoader {
 	
 	@Override public String toString() {
 		return String.format(
-			"SettingsLoader [path=%s, login=%s, password=%s, computeMethod=%s, gpu=%s, renderbucket-size=%s, cacheDir=%s, theme=%s, priority=%d, autosign=%s, usetray=%s, headless=%s]",
-			path, login, password, computeMethod, gpu, renderbucketSize, cacheDir, theme, priority, autoSignIn, useSysTray, headless);
+			"SettingsLoader [path=%s, login=%s, password=%s, computeMethod=%s, gpu=%s, cacheDir=%s, theme=%s, priority=%d, autosign=%s, usetray=%s, headless=%s]",
+			path, login, password, computeMethod, gpu, cacheDir, theme, priority, autoSignIn, useSysTray, headless);
 	}
 }

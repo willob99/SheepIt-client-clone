@@ -8,8 +8,6 @@ public enum SwingTooltips {
 		+ "GPU so your CPU takes a break, sometimes it's the other way around. The only way to always use 100% of your system \n"
 		+ "is to setup 2 clients, but for that you need to use the command line to give them different configs."),
 	
-	RENDERBUCKET_SIZE("Basically the size of the orange squares you see in blender when you render. Blender calls it tile size. Unless you know better, the default is fine."),
-	
 	CPU_CORES("How many (logical) cores of your CPU, often called threads, Sheepit may use. This doesn't apply to GPU-jobs.\n"
 		+ "(Note that GPU jobs will also use CPU cores for scene building and feeding the GPU)\n"),
 	

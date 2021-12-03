@@ -26,7 +26,6 @@ public class GPUDevice {
 	private String type;
 	private String model;
 	private long memory; // in B
-	private int renderBucketSize;
 	
 	private String id;
 	
@@ -37,7 +36,6 @@ public class GPUDevice {
 		this.model = model;
 		this.memory = ram;
 		this.id = id;
-		this.renderBucketSize = GPU.MIN_RENDERBUCKET_SIZE;
 	}
 	
 	public GPUDevice(String type, String model, long ram, String id, String oldId) {
@@ -85,51 +83,7 @@ public class GPUDevice {
 		this.oldId = id;
 	}
 	
-	public int getRenderbucketSize() {
-		return this.renderBucketSize;
-	}
-
-	public int getRecommendedBucketSize() {
-		this.setRenderbucketSize(null);
-		return this.renderBucketSize;
-	}
-	
-	public void setRenderbucketSize(Integer proposedRenderbucketSize) {
-		GPULister gpu;
-		
-		if (type.equals("CUDA")) {
-			gpu = new Nvidia();
-		}
-		else if (type.equals("OPENCL")) {
-			gpu = new OpenCL();
-		}
-		else {
-			// If execution takes this branch is because we weren't able to detect the proper GPU technology or
-			// because is a new one (different from CUDA and OPENCL). In that case, move into the safest position
-			// of 32x32 pixel tile sizes
-			System.out.println("GPUDevice::setRenderbucketSize Unable to detect GPU technology. Render bucket size set to 32x32 pixels");
-			this.renderBucketSize = GPU.MIN_RENDERBUCKET_SIZE;
-			return;
-		}
-		
-		int renderBucketSize = GPU.MIN_RENDERBUCKET_SIZE;
-		
-		if (proposedRenderbucketSize == null) {
-			renderBucketSize = gpu.getRecommendedRenderBucketSize(getMemory());
-		}
-		else if (proposedRenderbucketSize >= GPU.MIN_RENDERBUCKET_SIZE) {
-			if (proposedRenderbucketSize <= gpu.getMaximumRenderBucketSize(getMemory())) {
-				renderBucketSize = proposedRenderbucketSize;
-			}
-			else {
-				renderBucketSize = gpu.getRecommendedRenderBucketSize(getMemory());
-			}
-		}
-		
-		this.renderBucketSize = renderBucketSize;
-	}
-	
 	@Override public String toString() {
-		return "GPUDevice [type=" + type + ", model='" + model + "', memory=" + memory + ", id=" + id + ", renderbucketSize=" + renderBucketSize + "]";
+		return "GPUDevice [type=" + type + ", model='" + model + "', memory=" + memory + ", id=" + id + "]";
 	}
 }

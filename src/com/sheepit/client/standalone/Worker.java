@@ -107,8 +107,6 @@ public class Worker {
 	
 	@Option(name = SettingsLoader.ARG_THEME, usage = "Specify the theme to use for the graphical client, default 'light', available 'light', 'dark'", required = false) private String theme = null;
 	
-	@Option(name = SettingsLoader.ARG_RENDERBUCKET_SIZE, usage = "Set a custom GPU renderbucket size (32 for 32x32px, 64 for 64x64px, and so on). NVIDIA GPUs support a maximum renderbucket size of 512x512 pixel, while AMD GPUs support a maximum 2048x2048 pixel renderbucket size. Minimum renderbucket size is 32 pixels for all GPUs", required = false) private int renderbucketSize = -1;
-	
 	@Option(name = SettingsLoader.ARG_HOSTNAME, usage = "Set a custom hostname name (name change will be lost when client is closed)", required = false) private String hostname = null;
 	
 	@Option(name = SettingsLoader.ARG_HEADLESS, usage = "Mark your client manually as headless to block Eevee projects", required = false) private boolean headless = java.awt.GraphicsEnvironment.isHeadless();
@@ -313,12 +311,6 @@ public class Worker {
 		}
 		
 		config.setComputeMethod(compute_method);
-		
-		// Change the default configuration if the user has specified a minimum renderbucket size of 32
-		if (renderbucketSize >= GPU.MIN_RENDERBUCKET_SIZE) {
-			// Send the proposed renderbucket size and check if viable
-			config.setRenderbucketSize(renderbucketSize);
-		}
 		
 		if (ui_type != null) {
 			config.setUIType(ui_type);

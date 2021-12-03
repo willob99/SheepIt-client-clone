@@ -60,7 +60,6 @@ import lombok.Data;
 	private int priority;
 	private ComputeType computeMethod;
 	private GPUDevice GPUDevice;
-	private int renderbucketSize;
 	private boolean detectGPUs;
 	private boolean printLog;
 	private List<Pair<Calendar, Calendar>> requestTime;
@@ -88,7 +87,6 @@ import lombok.Data;
 		this.priority = 19; // default lowest
 		this.computeMethod = null;
 		this.GPUDevice = null;
-		this.renderbucketSize = -1;
 		this.userHasSpecifiedACacheDir = false;
 		this.detectGPUs = true;
 		this.workingDirectory = null;
@@ -110,7 +108,7 @@ import lombok.Data;
 	public Configuration(Configuration config) {
 		this(config.configFilePath, config.workingDirectory, config.sharedDownloadsDirectory, config.storageDirectory, config.userHasSpecifiedACacheDir,
 			config.static_exeDirName, config.login, config.password, config.proxy, config.maxUploadingJob, config.nbCores, config.maxAllowedMemory, config.maxRenderTime,
-			config.priority, config.computeMethod, config.GPUDevice, config.renderbucketSize, config.detectGPUs, config.printLog, config.requestTime, config.shutdownTime,
+			config.priority, config.computeMethod, config.GPUDevice, config.detectGPUs, config.printLog, config.requestTime, config.shutdownTime,
 			config.shutdownMode, config.extras, config.autoSignIn, config.useSysTray, config.headless, config.UIType, config.hostname, config.theme);
 	}
 	
