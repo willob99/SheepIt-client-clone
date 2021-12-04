@@ -56,6 +56,14 @@ The maximum duration between two heartbeats in seconds is given by the attribute
     </speedtest>
 </config>
 
+The client then performs a speedtest on these mirror urls and POSTs back the 3 fastest ones using the "speedtest-answer" endpoint, together with the transfer time for the payload:
+<speedtest>
+   <result target="https://static-roubaix-fr.sheepit-renderfarm.com/scene/speedtest.zip" speed="724155" ping="26"/>
+   <result target="https://static-nuremberg-de.sheepit-renderfarm.com/scene/speedtest.zip" speed="674325" ping="33"/>
+   <result target="https://static-frankfurt3-de.sheepit-renderfarm.com/scene/speedtest.zip" speed="566186" ping="26"/>
+</speedtest>
+
+
 === Session end ===
 
 Url: use the request type "logout" from the configuration answer.

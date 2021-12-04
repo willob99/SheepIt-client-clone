@@ -4,8 +4,11 @@ import com.sheepit.client.datamodel.SpeedTestTarget;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -24,23 +27,24 @@ public class Speedtest {
 	public Speedtest(Log log) {
 		this.log = log;
 	}
-
+	
 	/**
-	* @param urls the urls to the speedtest payloads
-	* @param numberOfResults number of best mirrors to return
-	*
-	* @return An array of the mirrors with the best connection time. The size of the array is determined by <code>numberOfResults</code> or <code>urls.size()</code>
+	 * @param urls the urls to the speedtest payloads
+	 * @param numberOfResults number of best mirrors to return
+	 *
+	 * @return An array of the mirrors with the best connection time. The size of the array is determined by <code>numberOfResults</code> or <code>urls.size()</code>
 	 * if <code>numberOfResults > urls.size()</code>
-	*/
+	 */
 	public List<SpeedTestTarget> doSpeedtests(List<String> urls, int numberOfResults) {
-
+		
 		List<SpeedTestTarget> pingResult = (urls
-				.stream()
-				.map(this::measure)
-				.sorted(ORDERED)
-				.collect(Collectors.toList())
+			.stream()
+			.map(this::measure)
+			.filter(target -> target.getPing().getAverage() > 0)
+			.sorted(ORDERED)
+			.collect(Collectors.toList())
 		);
-
+		
 		numberOfResults = Math.min(numberOfResults, urls.size());
 		
 		List<SpeedTestTarget> result = new ArrayList<>(numberOfResults);
@@ -66,22 +70,25 @@ public class Speedtest {
 		result.sort(Comparator.comparing(SpeedTestTarget::getSpeedtest).reversed());
 		return result;
 	}
-
+	
 	private SpeedTestTarget measure(String mirror) {
 		long pingCount = 12;
-		var pingStatistics = LongStream
-				.range(0, pingCount)
-				.map(i -> {
-					try {
-						return runTimed(() -> ping(mirror, PORT)).first;
-					}
-					catch (Exception e) {
-						this.log.error("Speedtest::ping Exception " + e);
-						return Long.MAX_VALUE;
-					}
-				})
-				.summaryStatistics();
-
+		
+		LongStream.Builder streamBuilder = LongStream.builder();
+		
+		for (int i = 0; i < pingCount; i++) {
+			try {
+				streamBuilder.add(runTimed(() -> ping(mirror, PORT)).first);
+			}
+			catch (Exception e) {
+				this.log.error("Speedtest::ping Exception " + e);
+				pingCount /= 2;
+				streamBuilder.add(Long.MAX_VALUE);
+			}
+		}
+		
+		var pingStatistics = streamBuilder.build().summaryStatistics();
+		
 		return new SpeedTestTarget(mirror, -1, pingStatistics);
 	}
 	
@@ -116,13 +123,16 @@ public class Speedtest {
 			throw new RuntimeException("Unable to execute speedtest to: " + url, e);
 		}
 	}
-
+	
 	private static int ping(String url, int port) {
-		try (Socket socket = new Socket(new URL(url).getHost(), port)) {
-		
+		try (Socket socket = new Socket()) {
+			InetAddress mirrorIP = InetAddress.getByName(new URL(url).getHost());
+			SocketAddress socketAddress = new InetSocketAddress(mirrorIP, port);
+			int maxWaitingTime_ms = 3000;
+			socket.connect(socketAddress, maxWaitingTime_ms);
 		}
 		catch (IOException e) {
-			throw new RuntimeException("Unable to open a socket to " + url + ":" + port, e);
+			throw new RuntimeException("Unable to connect to " + url + ":" + port, e);
 		}
 		return -1;
 	}
