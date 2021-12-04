@@ -133,23 +133,22 @@ import java.util.regex.Pattern;
 						frameNumber, sceneMD5, rendererMD5, id, outputImagePath, path, useGPU, name, extras, updateRenderingStatusMethod, render);
 	}
 	
-	private OSProcess getRenderOSProcess() {
-		Process proc = getProcessRender().getProcess();
+	private OSProcess getAsOSProcess(Process proc) {
 		return proc == null ? null : OS.operatingSystem.getProcess((int) proc.pid()); // Check for null otherwise proc.pid() will throw NullPointerEx
 	}
 	
 	public long getUsedMemory() {
-		OSProcess osp = getRenderOSProcess();
+		OSProcess osp = getAsOSProcess(getProcessRender().getProcess());
 		return osp != null ? osp.getResidentSetSize() / 1024 : 0;
 	}
 	
 	public long getTotalUsedMemory() {
-		OSProcess osp = getRenderOSProcess();
+		OSProcess osp = getAsOSProcess(getProcessRender().getProcess());
 		return osp != null ? osp.getVirtualSize() / 1024 : 0;
 	}
 	
 	private int getThreadCount() {
-		OSProcess osp = getRenderOSProcess();
+		OSProcess osp = getAsOSProcess(getProcessRender().getProcess());
 		return osp != null ? osp.getThreadCount() : 0;
 	}
 	
@@ -358,7 +357,6 @@ import java.util.regex.Pattern;
 					}
 					
 					progress = computeRenderingProgress(line, tilePattern, progress);
-					updateRenderingMemoryPeak();
 					if (configuration.getMaxAllowedMemory() != -1 && getUsedMemory() > configuration.getMaxAllowedMemory()) {
 						log.debug("Blocking render because process ram used (" + getUsedMemory() + "k) is over user setting (" + configuration
 								.getMaxAllowedMemory() + "k)");
@@ -603,7 +601,8 @@ import java.util.regex.Pattern;
 	}
 	
 	private void updateRenderingMemoryPeak() {
-		if (getProcessRender().getProcess() != null && getRenderOSProcess() != null){
+		Process proc = getProcessRender().getProcess();
+		if (proc != null && getAsOSProcess(proc) != null){
 			long mem = getUsedMemory();
 			getProcessRender().setMemoryUsed(mem);
 			if (getProcessRender().getPeakMemoryUsed() < mem) {
