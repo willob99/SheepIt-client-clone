@@ -21,11 +21,9 @@ package com.sheepit.client;
 
 import com.sheepit.client.Configuration.ComputeType;
 import com.sheepit.client.Error.Type;
-import com.sheepit.client.hardware.cpu.CPU;
 import com.sheepit.client.os.OS;
 import lombok.Data;
 import lombok.Getter;
-import oshi.software.os.OSProcess;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -109,7 +107,7 @@ import java.util.regex.Pattern;
 		userBlockJob = false;
 		serverBlockJob = false;
 		log = log_;
-		render = new RenderProcess();
+		render = new RenderProcess(log_);
 		blenderShortVersion = null;
 		blenderLongVersion = null;
 	}
@@ -131,25 +129,6 @@ import java.util.regex.Pattern;
 		return String
 				.format("Job (numFrame '%s' sceneMD5 '%s' rendererMD5 '%s' ID '%s' pictureFilename '%s' jobPath '%s' gpu %s name '%s' extras '%s' updateRenderingStatusMethod '%s' render %s)",
 						frameNumber, sceneMD5, rendererMD5, id, outputImagePath, path, useGPU, name, extras, updateRenderingStatusMethod, render);
-	}
-	
-	private OSProcess getAsOSProcess(Process proc) {
-		return proc == null ? null : OS.operatingSystem.getProcess((int) proc.pid()); // Check for null otherwise proc.pid() will throw NullPointerEx
-	}
-	
-	public long getUsedMemory() {
-		OSProcess osp = getAsOSProcess(getProcessRender().getProcess());
-		return osp != null ? osp.getResidentSetSize() / 1024 : 0;
-	}
-	
-	public long getTotalUsedMemory() {
-		OSProcess osp = getAsOSProcess(getProcessRender().getProcess());
-		return osp != null ? osp.getVirtualSize() / 1024 : 0;
-	}
-	
-	private int getThreadCount() {
-		OSProcess osp = getAsOSProcess(getProcessRender().getProcess());
-		return osp != null ? osp.getThreadCount() : 0;
 	}
 	
 	public String getPrefixOutputImage() {
@@ -305,13 +284,14 @@ import java.util.regex.Pattern;
 			process.setCoresUsed(configuration.getNbCores());
 			process.start();
 			getProcessRender().setProcess(os.exec(command, new_env));
+			getProcessRender().setOsProcess(OS.operatingSystem.getProcess((int) getProcessRender().getProcess().pid()));
 			BufferedReader input = new BufferedReader(new InputStreamReader(getProcessRender().getProcess().getInputStream()));
 			memoryCheck.scheduleAtFixedRate(new TimerTask() {
 				@Override
 				public void run() {
-					updateRenderingMemoryPeak();
+					updateProcess();
 				}
-			}, 0L, 1000L);
+			}, 0L, 200L);
 			
 			// Make initial test/power frames ignore the maximum render time in user configuration. Initial test frames have Job IDs below 20
 			// so we just activate the user defined timeout when the scene is not one of the initial ones.
@@ -357,8 +337,8 @@ import java.util.regex.Pattern;
 					}
 					
 					progress = computeRenderingProgress(line, tilePattern, progress);
-					if (configuration.getMaxAllowedMemory() != -1 && getUsedMemory() > configuration.getMaxAllowedMemory()) {
-						log.debug("Blocking render because process ram used (" + getUsedMemory() + "k) is over user setting (" + configuration
+					if (configuration.getMaxAllowedMemory() != -1 && getProcessRender().getMemoryUsed().get() > configuration.getMaxAllowedMemory()) {
+						log.debug("Blocking render because process ram used (" + getProcessRender().getMemoryUsed().get() + "k) is over user setting (" + configuration
 								.getMaxAllowedMemory() + "k)");
 						OS.getOS().kill(process.getProcess());
 						process.finish();
@@ -386,7 +366,7 @@ import java.util.regex.Pattern;
 						return error;
 					}
 					
-					if (!event.isStarted() && (getUsedMemory() > 0 || process.getRemainingDuration() > 0)) {
+					if (!event.isStarted() && (getProcessRender().getMemoryUsed().get() > 0 || process.getRemainingDuration() > 0)) {
 						event.doNotifyIsStarted();
 					}
 				}
@@ -600,15 +580,8 @@ import java.util.regex.Pattern;
 		}
 	}
 	
-	private void updateRenderingMemoryPeak() {
-		Process proc = getProcessRender().getProcess();
-		if (proc != null && getAsOSProcess(proc) != null){
-			long mem = getUsedMemory();
-			getProcessRender().setMemoryUsed(mem);
-			if (getProcessRender().getPeakMemoryUsed() < mem) {
-				getProcessRender().setPeakMemoryUsed(mem);
-			}
-		}
+	private void updateProcess() {
+		getProcessRender().update();
 	}
 	
 	private Type detectError(String line) {

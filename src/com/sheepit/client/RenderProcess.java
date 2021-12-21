@@ -22,24 +22,49 @@ package com.sheepit.client;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
+import oshi.software.os.OSProcess;
 
 @Data public class RenderProcess {
 	private long startTime;
 	private long endTime;
 	private int remainingDuration; // in seconds
-	private long memoryUsed; // in kB
+	private AtomicLong memoryUsed; // in kB
 	private long peakMemoryUsed; // in kB
 	private int coresUsed;
 	private Process process;
+	private OSProcess osProcess;
+	private Log log;
 	
-	public RenderProcess() {
+	public RenderProcess(Log _log) {
 		process = null;
+		osProcess = null;
 		startTime = -1;
 		endTime = -1;
-		memoryUsed = 0;
+		memoryUsed = new AtomicLong(0);
 		peakMemoryUsed = 0;
 		coresUsed = 0;
 		remainingDuration = 0;
+		log = _log;
+	}
+	
+	public void update() {
+		OSProcess osp = osProcess; // Shallow copy to try to not run into a race condition via being nulled
+		try {
+			if (osp != null && osp.updateAttributes()){ // We enter if updateAttributes() was successful
+				long mem = osp.getResidentSetSize() / 1024; // Avoid multiple ram usage calls, because again, they might differ
+				if (mem != 0){
+					memoryUsed.set(mem);
+					if (peakMemoryUsed < mem) {
+						peakMemoryUsed = mem;
+					}
+				}
+			}
+		} catch (NullPointerException ex) { // We are racing the system itself, we can't avoid catching NPE's
+			log.debug("RenderProcess::Handled process becoming unavailable mid-update");
+			osProcess = null;
+			memoryUsed.set(0);
+		}
 	}
 	
 	/**
@@ -57,6 +82,7 @@ import java.util.Date;
 	
 	public void finish() {
 		endTime = new Date().getTime();
+		osProcess = null;
 		process = null;
 	}
 	
