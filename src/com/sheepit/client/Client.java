@@ -30,6 +30,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
@@ -62,6 +63,7 @@ import okhttp3.HttpUrl;
 
 @Data public class Client {
 	public static final int MIN_JOB_ID = 20; //to distinguish between actual jobs and test frames
+	private static final Locale LOCALE = Locale.ENGLISH;
 	private Gui gui;
 	private Server server;
 	private Configuration configuration;
@@ -800,12 +802,12 @@ import okhttp3.HttpUrl;
 	
 	protected Error.Type downloadSceneFile(Job ajob_) throws FermeExceptionNoSpaceLeftOnDevice {
 		return this.downloadFile(ajob_, ajob_.getRequiredSceneArchivePath(), ajob_.getSceneMD5(),
-				String.format("%s?type=job&job=%s", this.server.getPage("download-archive"), ajob_.getId()), "project");
+				String.format(LOCALE, "%s?type=job&job=%s", this.server.getPage("download-archive"), ajob_.getId()), "project");
 	}
 	
 	protected Error.Type downloadExecutable(Job ajob) throws FermeExceptionNoSpaceLeftOnDevice {
 		return this.downloadFile(ajob, ajob.getRequiredRendererArchivePath(), ajob.getRendererMD5(),
-				String.format("%s?type=binary&job=%s", this.server.getPage("download-archive"), ajob.getId()), "renderer");
+				String.format(LOCALE, "%s?type=binary&job=%s", this.server.getPage("download-archive"), ajob.getId()), "renderer");
 	}
 	
 	private Error.Type downloadFile(Job ajob, String local_path, String md5_server, String url, String download_type) throws FermeExceptionNoSpaceLeftOnDevice {
@@ -1017,7 +1019,7 @@ import okhttp3.HttpUrl;
 	}
 	
 	protected Error.Type confirmJob(Job ajob, int checkpoint) {
-		String url_real = String.format("%s&rendertime=%d&memoryused=%s", ajob.getValidationUrl(), ajob.getProcessRender().getDuration(),
+		String url_real = String.format(LOCALE, "%s&rendertime=%d&memoryused=%s", ajob.getValidationUrl(), ajob.getProcessRender().getDuration(),
 				ajob.getProcessRender().getPeakMemoryUsed());
 		this.log.debug(checkpoint, "Client::confirmeJob url " + url_real);
 		this.log.debug(checkpoint, "path frame " + ajob.getOutputImagePath());
