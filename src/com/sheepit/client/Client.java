@@ -61,6 +61,7 @@ import lombok.Data;
 import okhttp3.HttpUrl;
 
 @Data public class Client {
+	public static final int MIN_JOB_ID = 20; //to distinguish between actual jobs and test frames
 	private Gui gui;
 	private Server server;
 	private Configuration configuration;
@@ -405,7 +406,7 @@ import okhttp3.HttpUrl;
 						
 						// Initial test frames always have the Job ID below 20. If we have any error while trying to render the initial frame just
 						// halt the execution
-						if (Integer.parseInt(currentJob.getId()) < 20) {
+						if (Integer.parseInt(currentJob.getId()) < MIN_JOB_ID) {
 							// Add the proper explanation to the existing error message and keep the client waiting forever to ensure the user sees the error
 							this.gui.error(Error.humanString(ret) + " The error happened during the test frame render. Restart the client and try again.");
 							while (shuttingdown == false) {
@@ -1073,7 +1074,8 @@ import okhttp3.HttpUrl;
 		this.isValidatingJob = false;
 		this.previousJob = ajob;
 		
-		if (confirmJobReturnCode == Error.Type.OK) {
+		//count frames if they are not test frames and got validated correctly
+		if (confirmJobReturnCode == Error.Type.OK && Integer.parseInt(this.renderingJob.getId()) >= MIN_JOB_ID) {
 			gui.AddFrameRendered();
 		}
 		
