@@ -38,6 +38,9 @@ import com.sheepit.client.hardware.gpu.GPU;
 import com.sheepit.client.hardware.gpu.GPUDevice;
 import com.sheepit.client.standalone.GuiText;
 import com.sheepit.client.standalone.GuiTextOneLine;
+import com.sheepit.client.os.OS;
+import com.sheepit.client.os.Linux;
+import com.sheepit.client.os.Mac;
 import lombok.Data;
 
 @Data
@@ -128,7 +131,7 @@ public class SettingsLoader {
 	
 	public SettingsLoader(String path_) {
 		if (path_ == null) {
-			path = getDefaultFilePath();
+			path = OS.getOS().getDefaultConfigFilePath();
 		}
 		else {
 			path = path_;
@@ -140,7 +143,7 @@ public class SettingsLoader {
 		Integer maxRenderTime_, String cacheDir_, Boolean autoSignIn_, Boolean useSysTray_, Boolean isHeadless,
 		String ui_,	String theme_, Integer priority_) {
 		if (path_ == null) {
-			path = getDefaultFilePath();
+			path = OS.getOS().getDefaultConfigFilePath();
 		}
 		else {
 			path = path_;
@@ -195,10 +198,6 @@ public class SettingsLoader {
 			option.setValue(value);
 		}
 		return option;
-	}
-	
-	public static String getDefaultFilePath() {
-		return System.getProperty("user.home") + File.separator + ".sheepit.conf";
 	}
 	
 	public String getFilePath() {

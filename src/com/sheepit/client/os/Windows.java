@@ -18,6 +18,7 @@
  */
 package com.sheepit.client.os;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -174,5 +175,9 @@ public class Windows extends OS {
 			System.err.println(
 					String.format("Windows::shutdownComputer Unable to execute the command 'shutdown /s /f /t 60...' command. Exception %s", e.getMessage()));
 		}
+	}
+
+	@Override public String getDefaultConfigFilePath() {
+		return System.getProperty("user.home") + File.separator + ".sheepit.conf";
 	}
 }

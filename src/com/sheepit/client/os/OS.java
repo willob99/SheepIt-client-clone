@@ -18,6 +18,7 @@
  */
 package com.sheepit.client.os;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -112,5 +113,31 @@ public abstract class OS {
 			}
 		}
 		return instance;
+	}
+
+	public String getDefaultConfigFilePath() {
+		String xdgConfigHome = System.getenv("XDG_CONFIG_HOME");
+		String userHome = System.getProperty("user.home");
+		// fallback xdg config home should be ~/.config/
+		if (xdgConfigHome == null || xdgConfigHome.isEmpty()) {
+			xdgConfigHome = userHome + File.separator + ".config";
+		}
+		// add the config folder to the path 
+		xdgConfigHome += File.separator + "sheepit";
+		
+		// check if file already exists in ~/.config/sheepit/sheepit.conf
+		File file = new File(xdgConfigHome + File.separator + "sheepit.conf");
+		if (file.exists()) {
+			return file.getAbsolutePath();
+		} 
+		// if it doesn't exist, try $HOME/.sheepit.conf
+		file = new File(userHome + File.separator + ".sheepit.conf");
+		if (file.exists()) {
+			return file.getAbsolutePath();
+		}
+		// if it doesn't exist, create the file in the XDG compliant location
+		file = new File(xdgConfigHome);
+		file.mkdirs();
+		return file.getAbsolutePath() + File.separator + "sheepit.conf";
 	}
 }
