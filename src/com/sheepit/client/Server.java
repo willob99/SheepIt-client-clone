@@ -208,7 +208,7 @@ public class Server extends Thread {
 				.add("os_version", os.getVersion())
 				.add("ram", String.valueOf(os.getTotalMemory()))
 				.add("bits", os.getCPU().arch())
-				.add("version", user_config.getJarVersion())
+				.add("version", Configuration.jarVersion)
 				.add("hostname", user_config.getHostname())
 				.add("ui", client.getGui().getClass().getSimpleName())
 				.add("extras", user_config.getExtras())

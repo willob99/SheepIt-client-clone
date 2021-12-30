@@ -623,7 +623,7 @@ import okhttp3.HttpUrl;
 			
 			StringBuilder logHeader = new StringBuilder()
 				.append("====================================================================================================\n")
-				.append(String.format("%s  /  %s  /  %s  /  SheepIt v%s\n", conf.getLogin(), conf.getHostname(), OS.getOS().name(), conf.getJarVersion()))
+				.append(String.format("%s  /  %s  /  %s  /  SheepIt v%s\n", conf.getLogin(), conf.getHostname(), OS.getOS().name(), Configuration.jarVersion))
 				.append(String.format("%s  x%d  %.1f GB RAM\n", cpu.name(), conf.getNbCores(), conf.getMaxAllowedMemory() / 1024.0 / 1024.0));
 			
 			if (conf.getComputeMethod() == Configuration.ComputeType.GPU || conf.getComputeMethod() == Configuration.ComputeType.CPU_GPU) {

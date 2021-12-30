@@ -35,7 +35,7 @@ public class VersionParameterHandler<T> extends OptionHandler<T> {
 	
 	@Override public int parseArguments(Parameters params) throws CmdLineException {
 		Configuration config = new Configuration(null, "", "");
-		System.out.println("Version: " + config.getJarVersion());
+		System.out.println("Version: " + Configuration.jarVersion);
 		System.exit(0);
 		return 0;
 	}

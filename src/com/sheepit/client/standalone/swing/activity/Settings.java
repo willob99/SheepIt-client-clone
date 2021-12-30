@@ -141,7 +141,7 @@ public class Settings implements Activity {
 			
 			Graphics gph = watermark.getGraphics();
 			gph.setFont(gph.getFont().deriveFont(12f));
-			gph.drawString("v" + config.getJarVersion(), 335, 120);
+			gph.drawString("v" + Configuration.jarVersion, 335, 120);
 			gph.dispose();
 			
 			labelImage = new JLabel(new ImageIcon(watermark));

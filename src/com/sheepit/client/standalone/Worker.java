@@ -431,7 +431,7 @@ public class Worker {
 			settingsLoader.markLaunchSettings(List.of(args));
 		}
 		
-		Log.getInstance(config).debug("client version " + config.getJarVersion());
+		Log.getInstance(config).debug("client version " + Configuration.jarVersion);
 		
 		// Hostname change will overwrite the existing one (default or read from configuration file) but changes will be lost when the client closes
 		if (hostname != null) {

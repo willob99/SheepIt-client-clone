@@ -40,6 +40,8 @@ import lombok.Data;
 @AllArgsConstructor
 @Data public class Configuration {
 	
+	public static final String jarVersion = getJarVersion();
+	
 	public enum ComputeType {
 		CPU_GPU, CPU, GPU
 	} // accept job for ...
@@ -300,26 +302,24 @@ import lombok.Data;
 		return files_local;
 	}
 	
-	public String getJarVersion() {
+	private static String getJarVersion() {
 		String versionPath = "/VERSION";
+		String version = "6.0.0";
 		
 		InputStream versionStream = Client.class.getResourceAsStream(versionPath);
-		if (versionStream == null) {
+		if (versionStream != null) {
+			try {
+				BufferedReader in = new BufferedReader(new InputStreamReader(versionStream));
+				version = in.readLine();
+			}
+			catch (IOException ex) {
+				System.err.println("Configuration::getJarVersion error while reading manifest file (" + versionPath + "): " + ex.getMessage());
+			}
+		}
+		else {
 			System.err.println("Configuration::getJarVersion Failed to get version file");
-			return "6.0.0";
 		}
-		
-		try {
-			InputStreamReader reader = new InputStreamReader(versionStream);
-			BufferedReader in = new BufferedReader(reader);
-			String version = in.readLine();
-			
-			return version;
-		}
-		catch (IOException ex) {
-			System.err.println("Configuration::getJarVersion error while reading manifest file (" + versionPath + "): " + ex.getMessage());
-			return "6.0.0";
-		}
+		return version;
 	}
 	
 	public boolean checkOSisSupported() {
