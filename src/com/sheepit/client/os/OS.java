@@ -105,7 +105,12 @@ public abstract class OS {
 					instance = new Windows();
 					break;
 				case "Apple":
-					instance = new Mac();
+					if ("aarch64".equalsIgnoreCase(System.getProperty("os.arch"))) { // ARM arch ?
+						instance = new MacM1();
+					}
+					else {
+						instance = new Mac();
+					}
 					break;
 				case "GNU/Linux":
 					instance = new Linux();
