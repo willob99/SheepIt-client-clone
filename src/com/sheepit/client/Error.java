@@ -151,41 +151,41 @@ public class Error {
 	public static String humanString(Type in) {
 		switch (in) {
 			case ERROR_BAD_RESPONSE:
-				return "Bad answer from server. It's a server side error, wait a bit and retry later.";
+				return "Corrupt response from server when trying to upload data. The server might be overloaded or encountering other issues. Will try again in a few minutes.";
 			case NETWORK_ISSUE:
-				return "Could not connect to the server, please check if you have connectivity issue";
+				return "Could not connect to the server, please check your connection to the internet.";
 			case TOO_OLD_CLIENT:
-				return "This client is too old, you need to update it";
+				return "This client is too old, you need to update it.";
 			case AUTHENTICATION_FAILED:
-				return "Failed to authenticate, please check your login and password";
+				return "Failed to authenticate, please check your login and password.";
 			case DOWNLOAD_FILE:
 				return "Error while downloading project files. Will try another project in a few minutes.";
 			case NOOUTPUTFILE:
-				return "Renderer has generated no output file, possibly a wrong project configuration or you are missing required libraries. Will try another project in a few minutes.";
+				return "Renderer shut down without saving an image. This could be a broken project, or you could be missing libraries Blender needs. Will try another project in a few minutes.";
 			case IMAGE_TOO_LARGE:
 				return "The generated image is too big to be handled by the server. Will try another project in a few minutes.";
 			case RENDERER_CRASHED:
-				return "Renderer has crashed. It's usually due to a bad project or not enough memory. There is nothing you can do about it. Will try another project in a few minutes.";
+				return "Renderer has crashed. This is usually because the project consumes too much memory, or is just broken. Will try another project in a few minutes.";
 			case RENDERER_CRASHED_PYTHON_ERROR:
 				return "Renderer has crashed due to Python error. Will try another project in a few minutes.";
 			case RENDERER_OUT_OF_VIDEO_MEMORY:
-				return "Renderer has crashed, due to not enough video memory (vram). There is nothing you can do about it. Will try another project in a few minutes.";
+				return "Project tried to use too much video memory (VRAM). Will try another project in a few minutes.";
 			case RENDERER_OUT_OF_MEMORY:
-				return "No more memory available. There is nothing you can do about it. Will try another project in a few minutes.";
+				return "Project tried to use too much memory. Will try another project in a few minutes.";
 			case GPU_NOT_SUPPORTED:
-				return "Rendering have failed because your GPU is not supported";
+				return "Project's Blender version requires a newer GPU, or your CUDA setup is broken. Will try another project in a few minutes.";
 			case RENDERER_MISSING_LIBRARIES:
-				return "Failed to launch renderer. Please check if you have necessary libraries installed and if you have enough free space in your working directory.";
+				return "Failed to launch renderer. Please check if you have all the necessary libraries installed and if you have enough free space in your working directory.";
 			case RENDERER_KILLED:
-				return "The renderer stopped because either you asked to stop or the server did (usually for a render time too high).";
+				return "Render canceled because either you stopped it from the website or the server did automatically (usually for a render taking too long).";
 			case RENDERER_KILLED_BY_USER:
-				return "The renderer stopped because you've blocked its project.";
+				return "Render canceled because you've blocked the project.";
 			case RENDERER_KILLED_BY_SERVER:
-				return "The renderer stopped because it's been killed by the server. Usually because the project will take too much time or it's been paused.";
+				return "Render canceled because the project has been stopped by the server. Usually because the project will take too much time or it's been paused.";
 			case SESSION_DISABLED:
 				return "The server has disabled your session. Your client may have generated a broken frame (GPU not compatible, not enough RAM/VRAM, etc).";
 			case RENDERER_NOT_AVAILABLE:
-				return "No renderer are available on the server for your machine.";
+				return "The official Blender builds don't support rendering on this hardware.";
 			case MISSING_RENDERER:
 				return "Unable to locate the Blender renderer within the binary download.";
 			case OS_NOT_SUPPORTED:
@@ -193,11 +193,11 @@ public class Error {
 			case CPU_NOT_SUPPORTED:
 				return "CPU not supported.";
 			case ENGINE_NOT_AVAILABLE:
-				return "Engine not available.";
+				return "Project requires a rendering engine that isn't supported on this machine. Will try another project in a few minutes.";
 			case NO_SPACE_LEFT_ON_DEVICE:
-				return "No space left on hard disk";
+				return "No space left on hard disk.";
 			case IMAGE_WRONG_DIMENSION:
-				return "Validation failed, switching to another project";
+				return "Rendered image was the wrong resolution. Project is configured incorrectly. Switching to another project.";
 			default:
 				return in.toString();
 		}
