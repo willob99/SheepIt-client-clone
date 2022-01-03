@@ -1077,7 +1077,7 @@ import okhttp3.HttpUrl;
 		this.previousJob = ajob;
 		
 		//count frames if they are not test frames and got validated correctly
-		if (confirmJobReturnCode == Error.Type.OK && Integer.parseInt(this.renderingJob.getId()) >= MIN_JOB_ID) {
+		if (confirmJobReturnCode == Error.Type.OK && Integer.parseInt(ajob.getId()) >= MIN_JOB_ID) {
 			gui.AddFrameRendered();
 		}
 		
