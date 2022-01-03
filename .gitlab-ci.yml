@@ -3,6 +3,7 @@ image: openjdk:11
 stages:
   - build
   - test
+  - wrap
   - deploy
 
 before_script:
@@ -30,20 +31,16 @@ test:
     - ./gradlew check
 
 wrap-client:
-  stage: build
+  stage: wrap
   image: debian:stable-slim
-  needs:
-    - job: build-client
-      artifacts: true
   variables:
       JVM_NAME: "jdk-11.0.13+8-jre"  # Taken from https://adoptium.net/releases.html?variant=openjdk11&jvmVariant=hotspot
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends unzip p7zip wget ca-certificates  # Add dependencies
+    - apt-get install -y --no-install-recommends unzip p7zip  # Add dependencies
     - mkdir jre  # Make folder hierarchy
     - cp ./sheepit-client-all.jar jre/sheepit-client.jar  # Copy client artifact to be packaged
-    - wget https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.13%2B8/OpenJDK11U-jre_x64_windows_hotspot_11.0.13_8.zip -O $JVM_NAME.zip
-    - unzip $JVM_NAME.zip  # Unzip the JRE
+    - unzip exe-wrapper/$JVM_NAME.zip  # Unzip the Java Runtime Environment archive
     - cp -rf $JVM_NAME/* jre/  # Copy JRE to be packaged
     - cd jre
     - 7zr a -mx=9 ../application.7z ./  # Compress and archive app package
