@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import com.sheepit.client.datamodel.SpeedTestTarget;
 import com.sheepit.client.datamodel.SpeedTestResult;
 import com.sheepit.client.datamodel.SpeedTestTargetResult;
+import com.sheepit.client.hardware.hwid.HWIdentifier;
 import com.sheepit.client.os.Windows;
 import lombok.Getter;
 import org.simpleframework.xml.core.Persister;
@@ -213,6 +214,7 @@ public class Server extends Thread {
 				.add("ui", client.getGui().getClass().getSimpleName())
 				.add("extras", user_config.getExtras())
 				.add("headless", java.awt.GraphicsEnvironment.isHeadless() ? "1" : (user_config.isHeadless() ? "1" : "0"))
+				.add("hwid", new HWIdentifier(log).getHardwareHash())
 				.build();
 			
 			this.log.debug("Server::getConfiguration url " + remoteURL.build().toString());
