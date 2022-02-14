@@ -51,7 +51,6 @@ import java.util.regex.Pattern;
 
 @Data public class Job {
 	public static final String UPDATE_METHOD_BY_REMAINING_TIME = "remainingtime";
-	public static final String UPDATE_METHOD_BLENDER_INTERNAL_BY_PART = "blenderinternal";
 	public static final String UPDATE_METHOD_BY_TILE = "by_tile";
 	
 	public static final int SHOW_BASE_ICON = -1;
@@ -316,7 +315,7 @@ import java.util.regex.Pattern;
 			try {
 				int progress = -1;
 				
-				Pattern tilePattern = Pattern.compile(" (Rendered|Path Tracing Tile|Rendering) (\\d+)\\s?\\/\\s?(\\d+)( Tiles| samples|,)");
+				Pattern progressPattern = Pattern.compile(" (Rendered|Path Tracing Tile|Rendering|Sample) (\\d+)\\s?\\/\\s?(\\d+)( Tiles| samples|,)*");
 				
 				// Initialise the progress bar in the icon and the UI (0% completed at this time)
 				gui.updateTrayIcon(0);
@@ -336,7 +335,7 @@ import java.util.regex.Pattern;
 						}
 					}
 					
-					progress = computeRenderingProgress(line, tilePattern, progress);
+					progress = computeRenderingProgress(line, progressPattern, progress);
 					if (configuration.getMaxAllowedMemory() != -1 && getProcessRender().getMemoryUsed().get() > configuration.getMaxAllowedMemory()) {
 						log.debug("Blocking render because process ram used (" + getProcessRender().getMemoryUsed().get() + "k) is over user setting (" + configuration
 								.getMaxAllowedMemory() + "k)");
@@ -353,7 +352,7 @@ import java.util.regex.Pattern;
 						return Error.Type.RENDERER_OUT_OF_MEMORY;
 					}
 					
-					updateRenderingStatus(line);
+					updateRenderingStatus(line, progress);
 					Type error = detectError(line);
 					if (error != Error.Type.OK) {
 						if (script_file != null) {
@@ -498,33 +497,8 @@ import java.util.regex.Pattern;
 		return newProgress;
 	}
 	
-	private void updateRenderingStatus(String line) {
-		if (getUpdateRenderingStatusMethod() != null && getUpdateRenderingStatusMethod().equals(Job.UPDATE_METHOD_BLENDER_INTERNAL_BY_PART)) {
-			String search = " Part ";
-			int index = line.lastIndexOf(search);
-			if (index != -1) {
-				String buf = line.substring(index + search.length());
-				String[] parts = buf.split("-");
-				if (parts.length == 2) {
-					try {
-						int current = Integer.parseInt(parts[0]);
-						int total = Integer.parseInt(parts[1]);
-						if (total != 0) {
-							long end_render = (new Date().getTime() - this.render.getStartTime()) * total / current;
-							Date date = new Date(end_render);
-							gui.setRemainingTime(String.format("%s %% (%s)", (int) (100.0 - 100.0 * current / total), Utils.humanDuration(date)));
-							getProcessRender().setRemainingDuration((int) (date.getTime() / 1000));
-							return;
-						}
-					}
-					catch (NumberFormatException e) {
-						System.out.println("Exception 92: " + e);
-					}
-				}
-			}
-			gui.status("Rendering");
-		}
-		else if (getUpdateRenderingStatusMethod() == null || getUpdateRenderingStatusMethod().equals(Job.UPDATE_METHOD_BY_REMAINING_TIME)) {
+	private void updateRenderingStatus(String line, int progress) {
+		if (getUpdateRenderingStatusMethod() == null || getUpdateRenderingStatusMethod().equals(Job.UPDATE_METHOD_BY_REMAINING_TIME)) {
 			String search_remaining = "remaining:";
 			int index = line.toLowerCase().indexOf(search_remaining);
 			if (index != -1) {
@@ -552,6 +526,20 @@ import java.util.regex.Pattern;
 					}
 					catch (ParseException err) {
 						log.error("Client::updateRenderingStatus ParseException " + err);
+					}
+				}
+			}
+			else {	//extrapolate remaining time from time rendered & progress
+				if (line.contains("Time") == true) {
+					long timeRendered = new Date().getTime() - getProcessRender().getStartTime();
+					
+					if (progress > 0 && timeRendered > 0) {
+						long linearTimeEstimation = (long) ((100.0 / progress) * timeRendered);
+						long timeRemaining = linearTimeEstimation - timeRendered;
+						Date date = new Date(timeRemaining);
+						
+						gui.setRemainingTime(Utils.humanDuration(date));
+						getProcessRender().setRemainingDuration((int) (date.getTime() / 1000));
 					}
 				}
 			}
