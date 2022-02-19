@@ -481,7 +481,7 @@ public class SettingsLoader {
 		}
 		
 		if (config.getMaxAllowedMemory() == -1 && ram != null) {
-			config.setMaxAllowedMemory(Utils.parseNumber(ram.getValue()) / 1024); // internal ram value is in KiB
+			config.setMaxAllowedMemory(Utils.parseNumber(ram.getValue()) / 1000); // internal ram value is in KiB
 		}
 		
 		if (config.getMaxRenderTime() == -1 && renderTime != null) {
