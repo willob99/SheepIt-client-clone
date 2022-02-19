@@ -141,8 +141,16 @@ public class Worker {
 		
 		if (sharedDownloadsDir != null) {
 			File dir = new File(sharedDownloadsDir);
-			if (dir.exists() == false || dir.canWrite() == false) {
-				System.err.println("ERROR: The shared-zip directory must exist and be writeable");
+			if (dir.exists() == false && dir.mkdirs()) {
+				Log.getInstance(config).debug("created shared-zip directory " + dir);
+			}
+			else if (dir.exists() == false) {
+				System.err.println("ERROR: The shared-zip directory " + dir + " does not exist and cannot be automatically created");
+				return;
+			}
+
+			if (dir.canWrite() == false) {
+				System.err.println("ERROR: The shared-zip directory " + dir + " must be writeable");
 				return;
 			}
 			config.setSharedDownloadsDirectory(dir);
