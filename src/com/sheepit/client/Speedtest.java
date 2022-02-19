@@ -125,14 +125,16 @@ public class Speedtest {
 	}
 	
 	private static int ping(String url, int port) {
+		InetAddress mirrorIP = null;
 		try (Socket socket = new Socket()) {
-			InetAddress mirrorIP = InetAddress.getByName(new URL(url).getHost());
+			mirrorIP = InetAddress.getByName(new URL(url).getHost());
 			SocketAddress socketAddress = new InetSocketAddress(mirrorIP, port);
 			int maxWaitingTime_ms = 3000;
 			socket.connect(socketAddress, maxWaitingTime_ms);
 		}
 		catch (IOException e) {
-			throw new RuntimeException("Unable to connect to " + url + ":" + port, e);
+			String problemURL = mirrorIP != null ? mirrorIP + " (derived from: " + url + ")" : url;
+			throw new RuntimeException("Unable to connect to " + problemURL, e);
 		}
 		return -1;
 	}
