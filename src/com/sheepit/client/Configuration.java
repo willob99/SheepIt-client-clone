@@ -311,7 +311,7 @@ import lombok.Data;
 	
 	private static String getJarVersion() {
 		String versionPath = "/VERSION";
-		String version = "6.0.0";
+		String version = "6.22006.0";
 		
 		InputStream versionStream = Client.class.getResourceAsStream(versionPath);
 		if (versionStream != null) {

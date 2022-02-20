@@ -959,26 +959,47 @@ import okhttp3.HttpUrl;
 		}
 		
 		if (!renderer_path_file.exists()) {
-			// we create the directory
-			renderer_path_file.mkdir();
-			
-			this.gui.status("Extracting renderer");
-			
-			// unzip the archive
-			ret = Utils.unzipFileIntoDirectory(renderer_archive, renderer_path, null, log);
-			if (ret != 0) {
-				this.log.error(
-						"Client::prepareWorkingDirectory, error(1) with Utils.unzipFileIntoDirectory(" + renderer_archive + ", " + renderer_path + ") returned "
-								+ ret);
-				this.gui.error(String.format("Unable to extract the renderer (error %d)", ret));
-				return -1;
+			// Start Will change
+			if (this.configuration.getRendererDirectoryOverride() != null) {
+				// Copy existing renderer into working directory
+				this.gui.status(
+					"Copying renderer from "
+					+ this.configuration.getRendererDirectoryOverride()
+					+ " to "
+					+ renderer_archive
+				);
+				try {
+					Files.copy(
+					Paths.get(this.configuration.getRendererDirectoryOverride()),
+					Paths.get(renderer_path).resolve("rend.exe")
+				);
+				}
+				catch (IOException e) {
+					this.gui.error("Error while copying specified renderer into working dir");
+				}
 			}
-			
-			try {
-				File f = new File(ajob.getRendererPath());
-				f.setExecutable(true);
-			}
-			catch (SecurityException e) {
+			else {
+				// we create the directory
+				renderer_path_file.mkdir();
+				
+				this.gui.status("Extracting renderer");
+				
+				// unzip the archive
+				ret = Utils.unzipFileIntoDirectory(renderer_archive, renderer_path, null, log);
+				if (ret != 0) {
+					this.log.error(
+							"Client::prepareWorkingDirectory, error(1) with Utils.unzipFileIntoDirectory(" + renderer_archive + ", " + renderer_path + ") returned "
+									+ ret);
+					this.gui.error(String.format("Unable to extract the renderer (error %d)", ret));
+					return -1;
+				}
+				
+				try {
+					File f = new File(ajob.getRendererPath());
+					f.setExecutable(true);
+				}
+				catch (SecurityException e) {
+				}
 			}
 		}
 		
