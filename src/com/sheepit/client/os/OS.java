@@ -113,15 +113,7 @@ public abstract class OS {
 					}
 					break;
 				case "GNU/Linux":
-					// Start Will change
-					// instance = new Linux();
-					if ("aarch64".equalsIgnoreCase(System.getProperty("os.arch"))) {
-						instance = new LinuxARM();
-					}
-					else {
-						instance = new Linux();
-					}
-					// End Will change
+					instance = new Linux();
 					break;
 			}
 		}
