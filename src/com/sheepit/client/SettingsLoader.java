@@ -65,9 +65,7 @@ public class SettingsLoader {
 		HEADLESS("headless"),
 		UI("ui"),
 		THEME("theme"),
-		// Start Will change
 		RENDERER_OVERRIDE("renderer-override");
-		// End Will change
 
 		String propertyName;
 
@@ -109,9 +107,7 @@ public class SettingsLoader {
 	public static final String ARG_THEME = "-theme";
 	public static final String ARG_HOSTNAME = "-hostname";
 	public static final String ARG_HEADLESS = "--headless";
-	// Start Will change
 	public static final String ARG_RENDERER_OVERRIDE = "-renderer-override";
-	// End Will change
 	
 	
 	private String path;
@@ -134,9 +130,7 @@ public class SettingsLoader {
 	private Option<String> ui;
 	private Option<String> theme;
 	private Option<Integer> priority;
-	// Start Will change
-	private Option<String> rendererDirectoryOverride;
-	// End Will change
+	private Option<String> rendererOverride;
 	
 	public SettingsLoader(String path_) {
 		if (path_ == null) {
@@ -150,8 +144,7 @@ public class SettingsLoader {
 	public void setSettings(String path_, String login_, String password_, String proxy_, String hostname_,
 		ComputeType computeMethod_, GPUDevice gpu_, Integer cores_, Long maxRam_,
 		Integer maxRenderTime_, String cacheDir_, Boolean autoSignIn_, Boolean useSysTray_, Boolean isHeadless,
-		String ui_,	String theme_, Integer priority_,
-		 /* Start Will change */ String rendererDirectoryOverride_ /* End Will change */) {
+		String ui_,	String theme_, Integer priority_, String rendererOverride_) {
 		if (path_ == null) {
 			path = OS.getOS().getDefaultConfigFilePath();
 		}
@@ -169,9 +162,7 @@ public class SettingsLoader {
 		ui = setValue(ui_, ui, ARG_UI);
 		priority = setValue(priority_, priority, ARG_PRIORITY);
 		theme = setValue(theme_, theme, ARG_THEME);
-		// Start Will change
-		rendererDirectoryOverride = setValue(rendererDirectoryOverride_, rendererDirectoryOverride, ARG_RENDERER_OVERRIDE);
-		// End Will change
+		rendererOverride = setValue(rendererOverride_, rendererOverride, ARG_RENDERER_OVERRIDE);
 		
 		if (cores_ > 0) {
 			cores = setValue(cores_.toString(), cores, ARG_CORES);
@@ -224,7 +215,7 @@ public class SettingsLoader {
 	 */
 	public void markLaunchSettings(List<String> argsList) {
 		Option options[] = { login, password, proxy, hostname, computeMethod, gpu, cores, ram, renderTime, cacheDir, autoSignIn,
-			useSysTray, headless, ui, theme, priority, /* Start Will change */ rendererDirectoryOverride /* End Will change */ };
+			useSysTray, headless, ui, theme, priority, rendererOverride };
 		
 		for (Option option : options) {
 			if (option != null && argsList.contains(option.getLaunchFlag())) {
@@ -290,9 +281,7 @@ public class SettingsLoader {
 			setProperty(prop, configFileProp, PropertyNames.HEADLESS, headless);
 			setProperty(prop, configFileProp, PropertyNames.UI, ui);
 			setProperty(prop, configFileProp, PropertyNames.THEME, theme);
-			// Start Will change
-			setProperty(prop, configFileProp, PropertyNames.RENDERER_OVERRIDE, rendererDirectoryOverride);
-			// End Will change
+			setProperty(prop, configFileProp, PropertyNames.RENDERER_OVERRIDE, rendererOverride);
 			prop.store(output, null);
 		}
 		catch (IOException io) {
@@ -393,9 +382,7 @@ public class SettingsLoader {
 			
 			theme = loadConfigOption(prop, PropertyNames.THEME, theme, ARG_THEME);
 
-			// Start Will change
-			rendererDirectoryOverride = loadConfigOption(prop, PropertyNames.RENDERER_OVERRIDE, rendererDirectoryOverride, ARG_RENDERER_OVERRIDE);
-			// End Will change
+			rendererOverride = loadConfigOption(prop, PropertyNames.RENDERER_OVERRIDE, rendererOverride, ARG_RENDERER_OVERRIDE);
 			
 			if (prop.containsKey(PropertyNames.PRIORITY.propertyName)) {
 				int prio = Integer.parseInt(prop.getProperty(PropertyNames.PRIORITY.propertyName));
@@ -535,11 +522,9 @@ public class SettingsLoader {
 			config.setAutoSignIn(Boolean.parseBoolean(autoSignIn.getValue()));
 		}
 
-		// Start Will change
-		if (config.getRendererDirectoryOverride() == null) {
-			config.setRendererDirectoryOverride(rendererDirectoryOverride.getValue());
+		if (config.getRendererOverride() == null) {
+			config.setRendererOverride(rendererOverride.getValue());
 		}
-		// End Will change
 	}
 	
 	private void initWithDefaults() {
@@ -560,20 +545,14 @@ public class SettingsLoader {
 		this.renderTime = null;
 		this.theme = null;
 		this.cores = new Option<>(String.valueOf(defaultConfigValues.getNbCores()), ARG_CORES);
-		// Start Will change
-		this.rendererDirectoryOverride = null;
-		// End Will change
+		this.rendererOverride = null;
 		
 		
 	}
 	
 	@Override public String toString() {
 		return String.format(
-			// Start Will change
-			// "SettingsLoader [path=%s, login=%s, password=%s, computeMethod=%s, gpu=%s, cacheDir=%s, theme=%s, priority=%d, autosign=%s, usetray=%s, headless=%s, rendererDirectoryOverride=%s]",
-			// path, login, password, computeMethod, gpu, cacheDir, theme, priority, autoSignIn, useSysTray, headless, rendererDirectoryOverride);
-			"SettingsLoader [path=%s, login=%s, password=%s, computeMethod=%s, gpu=%s, cacheDir=%s, theme=%s, priority=%d, autosign=%s, usetray=%s, headless=%s, rendererDirectoryOverride=%s]",
-			path, login, password, computeMethod, gpu, cacheDir, theme, priority, autoSignIn, useSysTray, headless, rendererDirectoryOverride);
-			// End Will change
+			"SettingsLoader [path=%s, login=%s, password=%s, computeMethod=%s, gpu=%s, cacheDir=%s, theme=%s, priority=%d, autosign=%s, usetray=%s, headless=%s, rendererOverride=%s]",
+			path, login, password, computeMethod, gpu, cacheDir, theme, priority, autoSignIn, useSysTray, headless, rendererOverride);
 	}
 }

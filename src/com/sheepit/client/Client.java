@@ -728,11 +728,14 @@ import okhttp3.HttpUrl;
 		gui.setRenderingProjectName(ajob.getName());
 		
 		try {
-			downloadRet = this.downloadExecutable(ajob);
-			if (downloadRet != Error.Type.OK) {
-				gui.setRenderingProjectName("");
-				this.log.error("Client::work problem with downloadExecutable (ret " + downloadRet + ")");
-				return downloadRet;
+			// Skip download if we're using a local executable
+			if (this.configuration.getRendererOverride() == null) {
+				downloadRet = this.downloadExecutable(ajob);
+				if (downloadRet != Error.Type.OK) {
+					gui.setRenderingProjectName("");
+					this.log.error("Client::work problem with downloadExecutable (ret " + downloadRet + ")");
+					return downloadRet;
+				}
 			}
 			
 			downloadRet = this.downloadSceneFile(ajob);
@@ -777,7 +780,9 @@ import okhttp3.HttpUrl;
 			@Override public void update(Observable observable, Object o) {
 				// only remove the .blend since it's most important data
 				// and it's the only file we are sure will not be needed anymore
-				scene_file.delete();
+				
+				// This was deleting the file too soon, so I got rid of it.
+				// scene_file.delete();
 			}
 		};
 		
@@ -947,7 +952,10 @@ import okhttp3.HttpUrl;
 		String renderer_path = ajob.getRendererDirectory();
 		File renderer_path_file = new File(renderer_path);
 		
-		if (!new File(renderer_archive).exists()) {
+		// Skip this step if using local executable
+		// if (!new File(renderer_archive).exists()) {
+		if (this.configuration.getRendererOverride() == null
+				&& !new File(renderer_archive).exists()) {
 			this.gui.status("Copying renderer from shared downloads directory");
 			
 			try {
@@ -959,29 +967,26 @@ import okhttp3.HttpUrl;
 		}
 		
 		if (!renderer_path_file.exists()) {
-			// Start Will change
-			if (this.configuration.getRendererDirectoryOverride() != null) {
-				// Copy existing renderer into working directory
+			// we create the directory
+			renderer_path_file.mkdir();
+			
+			if (this.configuration.getRendererOverride() != null) {
+				// If renderer-override is used, copy specified renderer into working directory
 				this.gui.status(
-					"Copying renderer from "
-					+ this.configuration.getRendererDirectoryOverride()
-					+ " to "
-					+ renderer_archive
+					"Copying renderer from " + this.configuration.getRendererOverride()
+					+ " to " + renderer_path
 				);
 				try {
 					Files.copy(
-					Paths.get(this.configuration.getRendererDirectoryOverride()),
-					Paths.get(renderer_path).resolve("rend.exe")
-				);
+						Paths.get(this.configuration.getRendererOverride()),
+						Paths.get(renderer_path).resolve("rend.exe")
+					);
 				}
 				catch (IOException e) {
-					this.gui.error("Error while copying specified renderer into working dir");
+					this.gui.error("Error while copying specified renderer into working dir: " + e.toString());
 				}
 			}
 			else {
-				// we create the directory
-				renderer_path_file.mkdir();
-				
 				this.gui.status("Extracting renderer");
 				
 				// unzip the archive
@@ -1034,6 +1039,15 @@ import okhttp3.HttpUrl;
 				this.gui.error(String.format("Unable to extract the scene (error %d)", ret));
 				return -2;
 			}
+
+			// Logging to help with scene deleting issue
+			this.gui.status("Scene extracted to " + scene_path);
+			String[] contents = scene_path_file.list();
+			String msg = scene_path + " contains: ";
+			for (String s : contents) {
+				msg += s + " ";
+			}
+			this.gui.status(msg);
 		}
 		
 		return 0;

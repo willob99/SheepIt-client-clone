@@ -135,11 +135,6 @@ import java.util.regex.Pattern;
 	}
 	
 	public String getRendererDirectory() {
-		// // Start Will change
-		// if (configuration.getRendererDirectoryOverride() != null) {
-		// 	return configuration.getRendererDirectoryOverride();
-		// }
-		// // End Will change
 		return configuration.getWorkingDirectory().getAbsolutePath() + File.separator + rendererMD5;
 	}
 	

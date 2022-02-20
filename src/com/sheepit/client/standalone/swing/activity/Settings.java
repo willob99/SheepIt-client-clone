@@ -770,7 +770,7 @@ public class Settings implements Activity {
 					.setSettings(config.getConfigFilePath(), login.getText(), new String(password.getPassword()), proxyText, hostnameText, method,
 						selected_gpu, cpu_cores, max_ram, max_rendertime, getCachePath(config), autoSignIn.isSelected(), useSysTray.isSelected(),
 						headlessCheckbox.isSelected(), GuiSwing.type, themeOptionsGroup.getSelection().getActionCommand(), config.getPriority(),
-						/* Start Will change */ config.getRendererDirectoryOverride() /* End Will change */);
+						config.getRendererOverride());
 				
 				// wait for successful authentication (to store the public key)
 				// or do we already have one?

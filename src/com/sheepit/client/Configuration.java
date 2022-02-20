@@ -74,9 +74,7 @@ import lombok.Data;
 	private String UIType;
 	private String hostname;
 	private String theme;
-	// Start Will change
-	private String rendererDirectoryOverride;
-	// End Will change
+	private String rendererOverride;
 	
 	public Configuration(File cache_dir_, String login_, String password_) {
 		this.configFilePath = null;
@@ -108,9 +106,7 @@ import lombok.Data;
 		this.headless = java.awt.GraphicsEnvironment.isHeadless();
 		this.UIType = null;
 		this.theme = null;
-		// Start Will change
-		this.rendererDirectoryOverride = null;
-		// End Will change
+		this.rendererOverride = null;
 	}
 	
 	public Configuration(Configuration config) {
@@ -118,7 +114,7 @@ import lombok.Data;
 			config.static_exeDirName, config.login, config.password, config.proxy, config.maxUploadingJob, config.nbCores, config.maxAllowedMemory, config.maxRenderTime,
 			config.priority, config.computeMethod, config.GPUDevice, config.detectGPUs, config.printLog, config.requestTime, config.shutdownTime,
 			config.shutdownMode, config.extras, config.autoSignIn, config.useSysTray, config.headless, config.UIType, config.hostname, config.theme,
-			/*Start Will change*/ config.rendererDirectoryOverride /*End Will change*/);
+			config.rendererOverride);
 	}
 	
 	public String toString() {
@@ -311,7 +307,7 @@ import lombok.Data;
 	
 	private static String getJarVersion() {
 		String versionPath = "/VERSION";
-		String version = "6.22006.0";
+		String version = "6.0.0";
 		
 		InputStream versionStream = Client.class.getResourceAsStream(versionPath);
 		if (versionStream != null) {
