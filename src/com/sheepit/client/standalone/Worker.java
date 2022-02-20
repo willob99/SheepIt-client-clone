@@ -111,6 +111,10 @@ public class Worker {
 	
 	@Option(name = SettingsLoader.ARG_HEADLESS, usage = "Mark your client manually as headless to block Eevee projects", required = false) private boolean headless = java.awt.GraphicsEnvironment.isHeadless();
 	
+	// Start Will change
+	@Option(name = SettingsLoader.ARG_RENDERER_OVERRIDE, usage = "Specify the directory of a blender executable to always use", required = false) private String rendererDirectoryOverride = null;
+	// End Will change
+
 	public static void main(String[] args) {
 		if (OS.getOS() == null) {
 			System.err.println(Error.humanString(Error.Type.OS_NOT_SUPPORTED));
@@ -332,6 +336,12 @@ public class Worker {
 			
 			config.setTheme(this.theme);
 		}
+
+		// Start Will change
+		if (rendererDirectoryOverride != null) {
+			config.setRendererDirectoryOverride(this.rendererDirectoryOverride);
+		}
+		// End Will change
 		
 		// Shutdown process block
 		if (shutdown != null) {

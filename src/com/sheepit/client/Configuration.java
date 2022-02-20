@@ -74,6 +74,9 @@ import lombok.Data;
 	private String UIType;
 	private String hostname;
 	private String theme;
+	// Start Will change
+	private String rendererDirectoryOverride;
+	// End Will change
 	
 	public Configuration(File cache_dir_, String login_, String password_) {
 		this.configFilePath = null;
@@ -105,13 +108,17 @@ import lombok.Data;
 		this.headless = java.awt.GraphicsEnvironment.isHeadless();
 		this.UIType = null;
 		this.theme = null;
+		// Start Will change
+		this.rendererDirectoryOverride = null;
+		// End Will change
 	}
 	
 	public Configuration(Configuration config) {
 		this(config.configFilePath, config.workingDirectory, config.sharedDownloadsDirectory, config.storageDirectory, config.userHasSpecifiedACacheDir,
 			config.static_exeDirName, config.login, config.password, config.proxy, config.maxUploadingJob, config.nbCores, config.maxAllowedMemory, config.maxRenderTime,
 			config.priority, config.computeMethod, config.GPUDevice, config.detectGPUs, config.printLog, config.requestTime, config.shutdownTime,
-			config.shutdownMode, config.extras, config.autoSignIn, config.useSysTray, config.headless, config.UIType, config.hostname, config.theme);
+			config.shutdownMode, config.extras, config.autoSignIn, config.useSysTray, config.headless, config.UIType, config.hostname, config.theme,
+			/*Start Will change*/ config.rendererDirectoryOverride /*End Will change*/);
 	}
 	
 	public String toString() {

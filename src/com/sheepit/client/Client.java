@@ -728,6 +728,15 @@ import okhttp3.HttpUrl;
 		gui.setRenderingProjectName(ajob.getName());
 		
 		try {
+			// // Hack for ARM Linux: If on ARM Linux, use local blender executable (don't download one).
+			// if (OS.getOS().name() != "linuxarm") {
+			// 	downloadRet = this.downloadExecutable(ajob);
+			// 	if (downloadRet != Error.Type.OK) {
+			// 		gui.setRenderingProjectName("");
+			// 		this.log.error("Client::work problem with downloadExecutable (ret " + downloadRet + ")");
+			// 		return downloadRet;
+			// 	}
+			// }
 			downloadRet = this.downloadExecutable(ajob);
 			if (downloadRet != Error.Type.OK) {
 				gui.setRenderingProjectName("");
