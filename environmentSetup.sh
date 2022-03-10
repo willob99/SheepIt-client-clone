@@ -6,11 +6,17 @@ apt-get update
 
 #apt install firefox
 
+echo "Installing Java"
+
 apt install default-jre
 
 apt install default-jdk
 
+echo "Installing Blender"
+
 apt install blender
+
+echo "Installing OpenGL"
 
 apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev #Install OpenGL
 
