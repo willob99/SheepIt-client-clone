@@ -6,6 +6,14 @@
 
 SheepIt Render Farm Client is an *Open Source* client for the distributed render farm [**SheepIt**](https://www.sheepit-renderfarm.com).
 
+## CS 219 Modifications
+
+This version is for testing SheepIt with ARM-based Linux devices such as Android devices running Linux. It allows the user to specify a Blender executable to use instead of the version that SheepIt provides, which is not compatible with these devices. To use this option, start the SheepIt client with this command:
+
+`java -jar [sheepit client].jar -ui text -login [login] -password [password] -server http://sandbox.sheepit-renderfarm.com -renderer-override /path/to/blender`
+
+This repository also contains our script for setting up the environment for SheepIt and Blender, in environmentSetup.sh.
+
 ## Compilation
 
 You will need Java 11 or higher. (OpenJDK and Oracle are both supported).
